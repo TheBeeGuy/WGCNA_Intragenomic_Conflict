@@ -17,22 +17,22 @@ library(RColorBrewer)
 
 ```{r data}
 #read in data
-active_brain<-read.table("data/activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
-active_FO<-read.table("data/activeReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
-sterile_brain<-read.table("data/sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame() 
-sterile_FO<-read.table("data/sterileReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
+active_brain<-read.table("../data/activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
+active_FO<-read.table("../data/activeReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
+sterile_brain<-read.table("../data/sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame() 
+sterile_FO<-read.table("../data/sterileReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
 
-all_expr<-read.table("data/all_expr.txt",header=T)%>%as.data.frame()
+all_expr<-read.table("../data/all_expr.txt",header=T)%>%as.data.frame()
 
 
 
 
 #read in sample info
-fbo_doe<-read.table("FBO_doe.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
-brain_doe<-read.table("pDataASE_brain.txt",header=T,stringsAsFactors = F)%>%as.data.frame()%>%mutate(Tissue="Brain",Allele=parent,Block=Block,Line=line)%>%select(-SampleID,-Unk_Identifier, -S_num, -subspecies,-line, -parent)
-pData_FBO<-read.table("pData_FBO.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
+fbo_doe<-read.table("../data/FBO_doe.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
+brain_doe<-read.table("../data/pDataASE_brain.txt",header=T,stringsAsFactors = F)%>%as.data.frame()%>%mutate(Tissue="Brain",Allele=parent,Block=Block,Line=line)%>%select(-SampleID,-Unk_Identifier, -S_num, -subspecies,-line, -parent)
+pData_FBO<-read.table("../data/pData_FBO.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
 
-all_info<-read.table("data/all_sample_info.pData.txt",header=T,row.names = 1)%>%as.data.frame()
+all_info<-read.table("../data/all_sample_info.pData.txt",header=T,row.names = 1)%>%as.data.frame()
 
 ##subset all genes and info into brain and FBO
 
@@ -44,8 +44,8 @@ all_expr_ovary<-all_expr[,all_info$Tissue=="FBO"]
 
 
 ##read in binary traits
-fbo_trait_binary<-read.table("FBO_doe_binary.txt", header=T)
-brain_trait_binary<-read.table("brain_doe_binary.txt", header=T)
+fbo_trait_binary<-read.table("../data/FBO_doe_binary.txt", header=T)
+brain_trait_binary<-read.table("../data/brain_doe_binary.txt", header=T)
 #REp Status - 0 is sterile, 1 is Reprdouctive
 #MatxPat - 0 is ExA, 1 is AxE
 #Tissue - 0 is FBO, 1 is Brain
@@ -190,9 +190,9 @@ rownames(activebrain_shared)<-
 ```
 
 ```{r DEG and PSGE overlaps}
-PSGE_active<-read.csv("PGSE-active.csv")%>%select("ID")
-PSGE_sterile<-read.csv("PGSE-sterile.csv")%>%select("ID")
-DEG_reproductive<-read.csv("DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
+PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
+PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
+DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
 
 ```
 
@@ -318,7 +318,7 @@ consTree = net$dendrograms[[1]];
 
 
 #consensus modules and colors
-pdf(file = "Consensus Dendrogram w colors.pdf",width = 8, height = 6)
+pdf(file = "../figures/Consensus Dendrogram w colors.pdf",width = 8, height = 6)
 plotDendroAndColors(consTree, consMColors[net$goodGenes],"Module colors",
 dendroLabels = FALSE, hang = 0.03,
 addGuide = FALSE, guideHang = 0.05,
@@ -326,8 +326,8 @@ main = "Consensus gene dendrogram and module colors")
 dev.off()
 
 
- save(consMEs, consMLabels,consMColors,consTree,net,Traits,multiExpr,setLabels,shortLabels, file = "ConsensusModules_BvsFBO.RData")
-# load("ConsensusModules_BvsFBO.RData")
+ save(consMEs, consMLabels,consMColors,consTree,net,Traits,multiExpr,setLabels,shortLabels, file = "../data/ConsensusModules_BvsFBO.RData")
+# load("../data/ConsensusModules_BvsFBO.RData")
 
 
 
@@ -342,7 +342,7 @@ dev.off()
 
 
 ```{r adapting glm ovary brain combined}
-load("ConsensusModules_BvsFBO.RData")
+load("../data/ConsensusModules_BvsFBO.RData")
 
 ##setup variables
 nSets=2
@@ -442,7 +442,7 @@ signif(consensusPvalue, 2)%>%as.matrix(), ")", sep = "")
 dim(textMatrix) = dim(consensusCor)
 
 
-pdf(file = "consensusTraitRelationships-signed.pdf", wi = 6, he = 6);
+pdf(file = "../figures/consensusTraitRelationships-signed.pdf", wi = 6, he = 6);
 par(mar = c(6, 8.8, 3, 2.2));
 labeledHeatmap(Matrix = consensusCor,
 xLabels = colnames(consensusCor),
@@ -501,7 +501,7 @@ consensusCor<-consensusCor[pvalues$min<0.05,]
 textMatrix<-textMatrix[pvalues$min<0.05,]
 
 
-pdf(file = "consensusTraitRelationships-unsigned.pdf", wi = 6, he = 6);
+pdf(file = "../figures/consensusTraitRelationships-unsigned.pdf", wi = 6, he = 6);
 par(mar = c(6, 8.8, 3, 2.2));
 labeledHeatmap(Matrix = consensusCor,
 xLabels = colnames(consensusCor),
@@ -570,7 +570,7 @@ textMatrix[[set]] = paste(signif(tissue_TraitCor[[set]]%>%as.matrix(), 2),
 for(set in 1:nSets){
 dim(textMatrix[[set]]) = dim(tissue_TraitCor[[set]])
 par(mar=c(5.1,4.1,4.1,2.1));
-pdf(file =  paste("Module-traits-", setLabels[set], ".pdf",sep = ""), height=14, width=8 )
+pdf(file =  paste("../figures/Module-traits-", setLabels[set], ".pdf",sep = ""), height=14, width=8 )
 labeledHeatmap(Matrix = tissue_TraitCor[[set]],
 xLabels = names(tissue_TraitCor[[set]]),
 yLabels = rownames(tissue_TraitCor[[set]]),
@@ -590,7 +590,7 @@ dev.off()
 
 ```{r getting module gene lists}
 #consMEs,consMColors,consMLabels,ME_names
-conversion<-read.csv("C:/Users/Rong/Box Sync/Projects/BPO_rnaseq/Reference Sheets/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID)
+conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID)
 MEdata<-multiExpr[[1]]$data
 gene_name<-colnames(MEdata)%>%as.data.frame
 colnames(gene_name)<-"Beebase"
@@ -618,7 +618,7 @@ module_significant_genes<-cbind(module_significant_genes,genes)
 }
 colnames(module_significant_genes)<-c("background",ME_names)
 module_significant_genes
-write.csv(module_significant_genes, "WGCNA_BvFBO_Sig_Modules_genes_entrez.csv")
+write.csv(module_significant_genes, "../output/WGCNA_BvFBO_Sig_Modules_genes_entrez.csv")
 
 ##Getting Hub Genes
 power=10
@@ -644,16 +644,16 @@ Hubgenes_Tissue<-cbind(Hubgenes_brain,Hubgenes_FBO)
 
 ```{r overlaps DMLs}
 #read in DMLS and get gene lists immediately
-active_parentDML<-read.csv(file = "DMLgene_lists_05-01-19/rep_parent_DMLgenes.csv")%>%select(V9)
-active_strainDML<-read.csv(file = "DMLgene_lists_05-01-19/rep_strain_DMLgenes.csv")%>%select(V9)
-sterile_parentDML<-read.csv(file = "DMLgene_lists_05-01-19/sterile_parent_DMLgenes.csv")%>%select(V9)
-sterile_strainDML<-read.csv(file = "DMLgene_lists_05-01-19/sterile_strain_DMLgenes.csv")%>%select(V9)
+active_parentDML<-read.csv(file = "../DMLgene_lists_05-01-19/rep_parent_DMLgenes.csv")%>%select(V9)
+active_strainDML<-read.csv(file = "../DMLgene_lists_05-01-19/rep_strain_DMLgenes.csv")%>%select(V9)
+sterile_parentDML<-read.csv(file = "../DMLgene_lists_05-01-19/sterile_parent_DMLgenes.csv")%>%select(V9)
+sterile_strainDML<-read.csv(file = "../DMLgene_lists_05-01-19/sterile_strain_DMLgenes.csv")%>%select(V9)
 
 
 
 
 #read in beebase ids
-mod_sig_beebase<-read.csv("WGCNA_BvFBO_Sig_Modules_genes_beebase.csv")%>%select(-X)
+mod_sig_beebase<-read.csv("../output/WGCNA_BvFBO_Sig_Modules_genes_beebase.csv")%>%select(-X)
 
 #name of modules
 module_name<-mod_sig_beebase%>%colnames()
@@ -744,9 +744,9 @@ module_DEG_DML_results<-left_join(moduleDMLgenes_results,moduleDEGgenes_results)
 
 
 
-write.csv(moduleDMLgenes_results,"moduleDMLoverlap_results.csv")
-write.csv(moduleDEGgenes_results,"moduleDEGoverlap_results.csv")
-write.csv(module_DEG_DML_results,"module_DEG_DML_overlap_results.csv") 
+write.csv(moduleDMLgenes_results,"../output/moduleDMLoverlap_results.csv")
+write.csv(moduleDEGgenes_results,"../output/moduleDEGoverlap_results.csv")
+write.csv(module_DEG_DML_results,"../output/module_DEG_DML_overlap_results.csv") 
 
 ##looking at specific modules
 active_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_active )
@@ -775,28 +775,28 @@ chisq.test(bothDML_ConsRepStatus)
 
 
 ```{r keggs for module genes}
-source("C:/Users/Rong/Box\ Sync/Projects/BPO_rnaseq/BPO_rnaseq/find_kegg.R")
+source("../code/find_kegg.R")
 
 kegg_pathways_WGCNA<-find_keggs(module_significant_genes)
 colnames(kegg_pathways_WGCNA)<-colnames(module_significant_genes)
 
 
-write.csv(kegg_pathways_WGCNA, file = "kegg_pathways_WGCNA_BvFBO.csv")
-#read.csv("kegg_pathways_WGCNA_BvFBO.csv")
+write.csv(kegg_pathways_WGCNA, file = "../output/kegg_pathways_WGCNA_BvFBO.csv")
+#read.csv("../output/kegg_pathways_WGCNA_BvFBO.csv")
 kegg_pathways_WGCNA$ME42
 ```
 
 
 ```{r exporting consensus to Cytoscape}
 # Recalculate topological overlap if needed
-load("ConsensusModules_BvsFBO.RData")
-Cons_name<-load("consensusTOM-block.1.RData")
+load("../data/ConsensusModules_BvsFBO.RData")
+Cons_name<-load("../data/consensusTOM-block.1.RData")
 
 consTOM = consTomDS%>%as.matrix()
 # Read in the annotation file
-annot <-read.csv("C:/Users/Rong/Box Sync/Projects/BPO_rnaseq/Reference Sheets/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)
+annot <-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)
 # Select modules
-modules =  "3";
+modules =  "3";##select which modules you want to see
 goodgenes<-net$goodGenes
 # Select module probes
 probes = colnames(multiExpr[[1]]$data)[goodgenes]
@@ -810,8 +810,8 @@ modTOM = consTOM[inModule, inModule];
 dimnames(modTOM) = list(modProbes, modProbes)
 # Export the network into edge and node list files Cytoscape can read
 cyt = exportNetworkToCytoscape(modTOM,
-edgeFile = paste("CytoscapeInput-edges-", paste(modules, collapse="-"), ".txt", sep=""),
-nodeFile = paste("CytoscapeInput-nodes-", paste(modules, collapse="-"), ".txt", sep=""),
+edgeFile = paste("../network_vis_for_cytoscape/CytoscapeInput-edges-", paste(modules, collapse="-"), ".txt", sep=""),
+nodeFile = paste("../network_vis_for_cytoscape/CytoscapeInput-nodes-", paste(modules, collapse="-"), ".txt", sep=""),
 weighted = TRUE,
 threshold = 0.02,
 nodeNames = modProbes,
@@ -820,6 +820,7 @@ nodeAttr = net$colors[goodgenes][inModule]);
 ```
 
 
+##deprecated
 
 ```{r WGCNA including tissue factor}
 options(stringsAsFactors = FALSE)
@@ -1251,7 +1252,6 @@ cex.text = 1.0, cex.lab = 1.0, setStdMargins = FALSE);
 
 
 ```
-##deprecated
 
 ```{r broken trait corr pheatmap}
 
