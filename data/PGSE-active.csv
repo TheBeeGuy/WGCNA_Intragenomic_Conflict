@@ -1,0 +1,202 @@
+ID,D. melanogaster Gene ID,accession,Gene name,p.value,fdr,bias
+GB44974,FBgn0028996,XM_006566493.1," PREDICTED: Apis mellifera homeobox protein onecut (onecut), transcript variant X1, mRNA",0,0,maternal
+GB52442,#N/A,XM_006565840.1," PREDICTED: Apis mellifera uncharacterized LOC100577670 (LOC100577670), mRNA",0,0,maternal
+GB43779,FBgn0036689,XM_003249421.2," PREDICTED: Apis mellifera uncharacterized LOC100577849 (LOC100577849), mRNA",0,0,maternal
+GB52090,FBgn0261705,XM_006566934.1," PREDICTED: Apis mellifera zinc finger protein 396-like (LOC552397), transcript variant X1, mRNA",0,0,maternal
+GB40847,#N/A,#N/A,#N/A,0,0,maternal
+GB41856,FBgn0000024,NM_001040230.1," Apis mellifera acetylcholinesterase 2 (AChE-2), mRNA",0,0,paternal
+GB53119,#N/A,NM_001085346.1," Apis mellifera apidermin 2 (Apd-2), mRNA",0,0,paternal
+GB52041,#N/A,AY155490.1," Apis mellifera transposon mariner Ammar1 transposase gene, complete cds",0,0,paternal
+GB48059,FBgn0000546,NM_001159355.1," Apis mellifera ecdysone receptor (Ecr), transcript variant B1, mRNA",0,0,paternal
+GB45028,FBgn0031741,NM_001126243.1," Apis mellifera venom dipeptidylpeptidase IV (LOC410337), mRNA",0,0,paternal
+GB49957,FBgn0044328,XM_006563669.1," PREDICTED: Apis mellifera acid sphingomyelinase-like phosphodiesterase 3a-like (LOC410577), transcript variant X2, mRNA",0,0,paternal
+GB44119,FBgn0000256,XM_006567301.1," PREDICTED: Apis mellifera cappuccino (capu), mRNA",0,0,paternal
+GB45148,#N/A,XM_001122721.3," PREDICTED: Apis mellifera clavesin-1-like (LOC727007), mRNA",0,0,paternal
+GB50694,FBgn0033639,XM_006559335.1," PREDICTED: Apis mellifera f-box/LRR-repeat protein 20-like (LOC409829), transcript variant X2, mRNA",0,0,paternal
+GB52776,#N/A,XM_006564804.1," PREDICTED: Apis mellifera hyaluronoglucosaminidase (LOC406146), transcript variant X1, mRNA",0,0,paternal
+GB49985,FBgn0259984,XM_006563614.1," PREDICTED: Apis mellifera kuzbanian (kuz), transcript variant X2, mRNA",0,0,paternal
+GB40808,#N/A,XM_006563298.1," PREDICTED: Apis mellifera lava lamp (lva), mRNA",0,0,paternal
+GB51059,#N/A,XM_006566019.1," PREDICTED: Apis mellifera limpet (Lmpt), transcript variant X8, mRNA",0,0,paternal
+GB49149,FBgn0004647,XM_006567988.1," PREDICTED: Apis mellifera neurogenic locus Notch protein (N), transcript variant X1, mRNA",0,0,paternal
+GB48961,FBgn0052250,XM_006565308.1," PREDICTED: Apis mellifera peroxisomal membrane protein PMP34-like (LOC551241), transcript variant X2, mRNA",0,0,paternal
+GB49183,#N/A,XM_006567969.1," PREDICTED: Apis mellifera PH domain leucine-rich repeat protein phosphatase (Phlpp), transcript variant X1, mRNA",0,0,paternal
+GB48241,FBgn0034046,XM_006558495.1," PREDICTED: Apis mellifera protein N-terminal glutamine amidohydrolase (tun), mRNA",0,0,paternal
+GB49567,FBgn0034897,XM_394521.5," PREDICTED: Apis mellifera sestrin homolog (LOC411048), transcript variant X1, mRNA",0,0,paternal
+GB43407,FBgn0042650,XM_006570505.1," PREDICTED: Apis mellifera uncharacterized LOC102656661 (LOC102656661), mRNA",0,0,paternal
+GB47026,FBgn0016926,XM_006568433.1," PREDICTED: Apis mellifera uncharacterized LOC408733 (LOC408733), transcript variant X3, mRNA",0,0,paternal
+GB43084,FBgn0035238,XM_624015.4," PREDICTED: Apis mellifera uncharacterized LOC551624 (LOC551624), transcript variant X3, mRNA",0,0,paternal
+GB46687,FBgn0261611,XM_006562168.1," PREDICTED: Apis mellifera uncharacterized LOC552195 (LOC552195), transcript variant X3, mRNA",0,0,paternal
+GB43208,#N/A,XM_624819.4," PREDICTED: Apis mellifera uncharacterized LOC552446 (LOC552446), transcript variant X2, mRNA",0,0,paternal
+GB43112,#N/A,XM_006570393.1," PREDICTED: Apis mellifera uncharacterized LOC552459 (LOC552459), transcript variant X2, mRNA",0,0,paternal
+GB47041,FBgn0050460,XR_411188.1," PREDICTED: Apis mellifera uncharacterized LOC724652 (LOC724652), transcript variant X3, misc_RNA",0,0,paternal
+GB43573,#N/A,XM_003249613.2," PREDICTED: Apis mellifera uncharacterized LOC725926 (LOC725926), transcript variant 2, mRNA",0,0,paternal
+GB42463,#N/A,XM_001121189.3," PREDICTED: Apis mellifera UPF0489 protein C5orf22 homolog (LOC725329), transcript variant X1, mRNA",0,0,paternal
+GB55481,#N/A,XM_006569121.1," PREDICTED: Apis mellifera voltage-dependent calcium channel type D subunit alpha-1-like (LOC100578899), mRNA",0,0,paternal
+GB41932,#N/A,#N/A,#N/A,0,0,paternal
+GB41933,#N/A,#N/A,#N/A,0,0,paternal
+GB45619,#N/A,#N/A,#N/A,0,0,paternal
+GB46348,#N/A,#N/A,#N/A,0,0,paternal
+GB40565,FBgn0020412,XM_395099.5," PREDICTED: Apis mellifera chromosomal serine/threonine-protein kinase JIL-1 (JIL-1), transcript variant X5, mRNA",6.1718E-308,8.2431E-306,paternal
+GB40077,FBgn0027601,XM_001121814.3," PREDICTED: Apis mellifera probable 4-coumarate--CoA ligase 3-like (LOC726040), transcript variant X1, mRNA",8.6511E-239,1.1307E-236,paternal
+GB47009,FBgn0016977,XM_006568474.1," PREDICTED: Apis mellifera uncharacterized LOC412243 (LOC412243), mRNA",5.0108E-235,6.5316E-233,paternal
+GB49544,#N/A,NM_001011578.1," Apis mellifera vitellogenin (Vg), mRNA",1.6727E-223,2.1602E-221,paternal
+GB40641,#N/A,XM_006562227.1," PREDICTED: Apis mellifera disks large 1 tumor suppressor protein-like (LOC724292), transcript variant X1, mRNA",1.5156E-216,1.9496E-214,European
+GB43689,#N/A,XM_001123230.3," PREDICTED: Apis mellifera uncharacterized LOC727522 (LOC727522), mRNA",9.3933E-188,1.1803E-185,European
+GB40009,#N/A,#N/A,#N/A,2.8325E-168,3.514E-166,paternal
+GB52917,FBgn0033948,XM_006560091.1," PREDICTED: Apis mellifera zinc finger CCHC domain-containing protein 4-like (LOC102653759), mRNA",2.5665E-167,3.1759E-165,paternal
+GB53256,FBgn0030686,XM_006561949.1," PREDICTED: Apis mellifera mitochondrial ribosomal protein L3 (mRpL3), mRNA",3.322E-132,3.9409E-130,paternal
+GB53288,FBgn0040211,XM_006572134.1," PREDICTED: Apis mellifera homogentisate 1,2-dioxygenase-like (LOC551465), mRNA",1.6482E-125,1.9341E-123,paternal
+GB47018,#N/A,XM_006568384.1," PREDICTED: Apis mellifera uncharacterized LOC724886 (LOC724886), transcript variant X1, mRNA",1.0909E-119,1.2679E-117,paternal
+GB47048,#N/A,XM_006568437.1," PREDICTED: Apis mellifera uncharacterized LOC408732 (LOC408732), transcript variant X2, mRNA",4.2173E-115,4.8843E-113,paternal
+GB40868,FBgn0052190,XM_392142.5," PREDICTED: Apis mellifera nucleobindin-2-like (LOC408600), mRNA",8.7695E-111,1.0097E-108,paternal
+GB45034,FBgn0032652,XM_006566369.1," PREDICTED: Apis mellifera fatty acid desaturase 1-like (LOC726913), transcript variant X3, mRNA",7.9433E-108,9.0811E-106,paternal
+GB47947,#N/A,XM_006564314.1," PREDICTED: Apis mellifera titin-like (LOC725936), mRNA",2.0205E-106,2.2992E-104,maternal
+GB53562,#N/A,XM_006570517.1," PREDICTED: Apis mellifera uncharacterized LOC408874 (LOC408874), transcript variant X9, mRNA",7.4752E-105,8.4765E-103,paternal
+GB52625,FBgn0003118,XM_006565539.1," PREDICTED: Apis mellifera ETS-like protein pointed (pnt), transcript variant X5, mRNA",4.807E-104,5.4382E-102,paternal
+GB52266,FBgn0004598,XM_006561495.1," PREDICTED: Apis mellifera furin-like protease 2-like (LOC408618), mRNA",1.7691E-102,1.9945E-100,paternal
+GB44726,FBgn0261822,XM_006569617.1," PREDICTED: Apis mellifera basigin (Bsg), mRNA",2.27361E-93,2.49696E-91,paternal
+GB54731,#N/A,XM_006557834.1," PREDICTED: Apis mellifera WD repeat-containing protein 63-like (LOC102655268), mRNA",2.55595E-93,2.80388E-91,paternal
+GB45024,FBgn0050051,XM_624834.4," PREDICTED: Apis mellifera transmembrane protein 18-like (LOC552460), mRNA",4.68233E-90,5.09076E-88,paternal
+GB47224,FBgn0000568,XM_006564321.1," PREDICTED: Apis mellifera ecdysone-induced protein 75 (E75), transcript variant X5, mRNA",4.0296E-88,4.33762E-86,paternal
+GB49869,FBgn0032904,XM_623641.4," PREDICTED: Apis mellifera microsomal triacylglycerol transfer protein (Mtp), transcript variant X2, mRNA",9.86745E-84,1.04716E-81,paternal
+GB44709,#N/A,XM_624888.4," PREDICTED: Apis mellifera kinesin 3E (kinesin-3E), transcript variant X7, mRNA",2.202E-82,2.31668E-80,paternal
+GB42985,#N/A,XM_001120250.3," PREDICTED: Apis mellifera n-acetylneuraminate lyase-like (LOC725646), mRNA",2.66146E-82,2.79705E-80,paternal
+GB52025,#N/A,XM_393860.5," PREDICTED: Apis mellifera neprilysin 2 (Nep2), transcript variant X4, mRNA",6.87431E-82,7.20128E-80,maternal
+GB50877,FBgn0024245,XM_393673.4," PREDICTED: Apis mellifera tyrosine-protein kinase Dnt (Dnt), transcript variant X2, mRNA",7.16943E-74,7.31424E-72,paternal
+GB41735,FBgn0036565,XM_006565816.1," PREDICTED: Apis mellifera MOXD1 homolog 1-like (LOC726997), mRNA",1.74584E-73,1.77739E-71,paternal
+GB55432,FBgn0032643,XM_625122.4," PREDICTED: Apis mellifera glucosidase 2 subunit beta-like (LOC552747), mRNA",1.50879E-70,1.51863E-68,paternal
+GB44699,FBgn0037739,XM_006567901.1," PREDICTED: Apis mellifera uncharacterized LOC725733 (LOC725733), transcript variant X3, mRNA",4.62283E-69,4.62914E-67,paternal
+GB53965,#N/A,XM_006571676.1," PREDICTED: Apis mellifera uncharacterized LOC100578606 (LOC100578606), transcript variant X5, mRNA",2.56376E-59,2.41843E-57,paternal
+GB45645,FBgn0010575,XM_006570262.1," PREDICTED: Apis mellifera uncharacterized LOC409729 (LOC409729), mRNA",5.81422E-59,5.46352E-57,paternal
+GB49890,#N/A,NM_001040234.1," Apis mellifera cytochrome P450 6AS5 (Cyp6as5), mRNA",1.48797E-58,1.39419E-56,paternal
+GB41964,#N/A,#N/A,#N/A,8.17288E-58,7.59222E-56,paternal
+GB47028,FBgn0034191,XM_623932.3," PREDICTED: Apis mellifera enoyl-CoA hydratase domain-containing protein 3, mitochondrial-like (LOC551537), mRNA",2.9127E-56,2.68279E-54,paternal
+GB48763,#N/A,XM_003251277.2," PREDICTED: Apis mellifera uncharacterized LOC100578780 (LOC100578780), mRNA",7.76937E-56,7.13591E-54,paternal
+GB55020,FBgn0025741,XM_394261.5," PREDICTED: Apis mellifera plexin A (plexA), transcript variant X3, mRNA",1.55218E-55,1.42028E-53,paternal
+GB40694,FBgn0037153,XM_393842.5," PREDICTED: Apis mellifera MOXD1 homolog 2-like (LOC410362), transcript variant X2, mRNA",2.38958E-53,2.13451E-51,paternal
+GB44588,FBgn0037808,XM_006567677.1," PREDICTED: Apis mellifera baculoviral IAP repeat-containing protein 6-like (LOC411115), mRNA",2.4871E-53,2.21959E-51,paternal
+GB43113,FBgn0033062,XM_006570385.1," PREDICTED: Apis mellifera serrate RNA effector molecule homolog (LOC413091), transcript variant X1, mRNA",4.36792E-48,3.74082E-46,paternal
+GB45115,#N/A,XR_410560.1," PREDICTED: Apis mellifera uncharacterized LOC102654991 (LOC102654991), ncRNA",8.51391E-48,7.28518E-46,paternal
+GB51593,FBgn0044872,XM_006571319.1," PREDICTED: Apis mellifera alpha-(1,3)-fucosyltransferase C-like (LOC102654353), mRNA",1.61592E-47,1.37787E-45,paternal
+GB46705,FBgn0053519,XM_006562133.1," PREDICTED: Apis mellifera Unc-89 protein (Unc-89), transcript variant X3, mRNA",4.04784E-44,3.32103E-42,European
+GB45145,FBgn0250785,XM_391909.4," PREDICTED: Apis mellifera varicose (vari), transcript variant X5, mRNA",1.5818E-41,1.26173E-39,paternal
+GB48715,#N/A,#N/A,#N/A,4.3982E-41,3.4883E-39,European
+GB48838,#N/A,XM_006568272.1," PREDICTED: Apis mellifera hephaestus (heph), mRNA",1.11092E-36,8.40795E-35,paternal
+GB40140,FBgn0031993,XM_006560385.1," PREDICTED: Apis mellifera protein PIEZO2-like (LOC408427), transcript variant X9, mRNA",1.08996E-34,8.00723E-33,paternal
+GB48336,FBgn0050372,XM_006562887.1," PREDICTED: Apis mellifera arf-GAP with SH3 domain, ANK repeat and PH domain-containing protein 2-like (LOC413683), transcript variant X1, mRNA",1.39627E-34,1.0242E-32,paternal
+GB51298,#N/A,#N/A,#N/A,4.36845E-34,3.16633E-32,paternal
+GB55664,FBgn0051374,XM_006569084.1," PREDICTED: Apis mellifera uncharacterized LOC551007 (LOC551007), transcript variant X1, mRNA",2.11257E-33,1.50993E-31,paternal
+GB44884,FBgn0035162,XM_623330.4," PREDICTED: Apis mellifera splicing factor 3b, subunit 3, 130kDa (SF3B3), transcript variant 1, mRNA",3.4942E-33,2.48109E-31,paternal
+GB56013,#N/A,XM_006557252.1," PREDICTED: Apis mellifera uncharacterized LOC100577436 (LOC100577436), mRNA",4.07694E-33,2.89066E-31,paternal
+GB52051,#N/A,XM_006572051.1," PREDICTED: Apis mellifera histone-lysine N-methyltransferase SETMAR-like (LOC102655927), mRNA",9.00119E-33,6.34522E-31,paternal
+GB48665,FBgn0013995,XM_006564754.1," PREDICTED: Apis mellifera Na/Ca-exchange protein (Calx), transcript variant X3, mRNA",7.05045E-32,4.90283E-30,paternal
+GB43130,#N/A,XM_003251514.2," PREDICTED: Apis mellifera single Ig IL-1-related receptor-like (LOC100578939), mRNA",1.33944E-31,9.11313E-30,paternal
+GB44482,FBgn0261794,XM_394587.5," PREDICTED: Apis mellifera solute carrier family 12 member 6-like (LOC411113), transcript variant X1, mRNA",5.03852E-30,3.31263E-28,paternal
+GB52999,#N/A,XM_006569302.1," PREDICTED: Apis mellifera uncharacterized LOC408772 (LOC408772), transcript variant X4, mRNA",1.62112E-28,1.04128E-26,paternal
+GB54362,FBgn0036282,XM_003249114.2," PREDICTED: Apis mellifera SET and MYND domain-containing protein 4-like (LOC100577347), transcript variant X1, mRNA",1.66866E-28,1.07111E-26,paternal
+GB48167,#N/A,XM_003251341.2," PREDICTED: Apis mellifera uncharacterized LOC100577498 (LOC100577498), transcript variant X1, mRNA",2.30604E-28,1.47058E-26,paternal
+GB49899,FBgn0051959,XM_006565019.1," PREDICTED: Apis mellifera uncharacterized LOC724962 (LOC724962), transcript variant X5, mRNA",6.90018E-27,4.19742E-25,paternal
+GB44136,FBgn0021814,XM_006567155.1," PREDICTED: Apis mellifera vacuolar protein sorting 28 (Vps28), mRNA",6.66754E-26,3.94619E-24,paternal
+GB41617,FBgn0042083,XM_394033.4," PREDICTED: Apis mellifera methylcrotonoyl-CoA carboxylase beta chain, mitochondrial-like (LOC410554), transcript variant X2, mRNA",3.91665E-25,2.22711E-23,paternal
+GB42428,FBgn0038407,XM_006565480.1," PREDICTED: Apis mellifera organic cation transporter protein-like (LOC412809), transcript variant X4, mRNA",5.51771E-25,3.11754E-23,paternal
+GB52743,FBgn0004875,XM_006564812.1," PREDICTED: Apis mellifera encore (enc), transcript variant X1, mRNA",6.5833E-25,3.71745E-23,paternal
+GB44549,#N/A,NM_001011574.1," Apis mellifera glucose oxidase (LOC406081), mRNA",1.7628E-24,9.80669E-23,paternal
+GB44808,FBgn0011828,XM_396476.4," PREDICTED: Apis mellifera peroxidasin (Pxn), transcript variant X2, mRNA",2.05724E-24,1.14252E-22,paternal
+GB48052,FBgn0035542,XM_006568060.1," PREDICTED: Apis mellifera uncharacterized LOC725263 (LOC725263), transcript variant X4, mRNA",7.96984E-24,4.35921E-22,paternal
+GB43942,FBgn0035726,XM_395356.5," PREDICTED: Apis mellifera putative serine protease K12H4.7-like (LOC411889), transcript variant X2, mRNA",1.67424E-23,9.06606E-22,paternal
+GB40823,FBgn0004649,XM_006563301.1," PREDICTED: Apis mellifera yolkless (yl), mRNA",9.89506E-23,5.18286E-21,paternal
+GB45378,FBgn0031850,XM_397221.5," PREDICTED: Apis mellifera thrombospondin (Tsp), transcript variant X2, mRNA",1.0336E-22,5.40802E-21,paternal
+GB46847,FBgn0027602,XM_006559753.1," PREDICTED: Apis mellifera probable ATP-dependent RNA helicase CG8611-like (LOC413874), transcript variant X1, mRNA",4.79984E-22,2.46125E-20,paternal
+GB45654,FBgn0030932,XM_006570228.1," PREDICTED: Apis mellifera gamma-glutamyltranspeptidase 1-like (LOC410096), transcript variant X2, mRNA",7.83137E-22,3.98645E-20,Africanized
+GB40091,FBgn0030530,XM_391978.4," PREDICTED: Apis mellifera uncharacterized LOC408431 (LOC408431), mRNA",3.03679E-21,1.51348E-19,paternal
+GB49883,FBgn0030091,XM_006565003.1," PREDICTED: Apis mellifera uncharacterized LOC551475 (LOC551475), mRNA",8.44312E-21,4.13196E-19,paternal
+GB41942,FBgn0041174,XM_001121921.3," PREDICTED: Apis mellifera von Hippel-Lindau (Vhl), mRNA",8.48887E-21,4.15227E-19,maternal
+GB46956,FBgn0011758,XM_001121415.3," PREDICTED: Apis mellifera homeobox protein B-H2 (LOC725590), mRNA",1.573E-20,7.63681E-19,paternal
+GB49577,#N/A,XM_006560571.1," PREDICTED: Apis mellifera uncharacterized LOC411046 (LOC411046), transcript variant X12, mRNA",3.75302E-19,1.72189E-17,paternal
+GB45509,FBgn0031902,XM_396945.5," PREDICTED: Apis mellifera Wnt6 protein (Wnt6), transcript variant X2, mRNA",1.04168E-18,4.66953E-17,maternal
+GB53632,FBgn0039257,XM_006564011.1," PREDICTED: Apis mellifera uncharacterized LOC726252 (LOC726252), transcript variant X2, mRNA",1.56177E-18,6.96894E-17,paternal
+GB42584,FBgn0040823,XM_392530.5," PREDICTED: Apis mellifera peroxidasin-like (LOC409000), transcript variant X1, mRNA",8.59872E-18,3.69019E-16,paternal
+GB48795,FBgn0028741,XM_393666.5," PREDICTED: Apis mellifera 1-phosphatidylinositol-3-phosphate 5-kinase (fab1), transcript variant X3, mRNA",1.20559E-17,5.14223E-16,paternal
+GB48765,FBgn0034063,XM_006569156.1," PREDICTED: Apis mellifera uncharacterized LOC410179 (LOC410179), mRNA",3.74259E-17,1.57229E-15,paternal
+GB48608,FBgn0001139,XM_392425.5," PREDICTED: Apis mellifera protein groucho-like (LOC408894), transcript variant X1, mRNA",6.39639E-17,2.65857E-15,paternal
+GB55601,FBgn0030435,XM_001121218.3," PREDICTED: Apis mellifera protein YIPF1-like (LOC725358), mRNA",6.74364E-17,2.80052E-15,paternal
+GB51612,#N/A,XM_006571350.1," PREDICTED: Apis mellifera latrophilin Cirl-like (LOC552142), transcript variant X5, mRNA",9.27514E-17,3.82901E-15,paternal
+GB55225,FBgn0001083,XM_006558985.1," PREDICTED: Apis mellifera C-type lectin 6 (CTL6), transcript variant X1, mRNA",1.38905E-16,5.69104E-15,paternal
+GB44970,FBgn0040348,XM_393737.5," PREDICTED: Apis mellifera RUN domain-containing protein 1-like (LOC410255), mRNA",1.44502E-16,5.91538E-15,paternal
+GB45836,#N/A,XM_006568649.1," PREDICTED: Apis mellifera blown fuse (blow), mRNA",2.59174E-16,1.0517E-14,paternal
+GB46737,FBgn0061356,XM_006562088.1," PREDICTED: Apis mellifera hydroxyacid oxidase 1-like (LOC552771), transcript variant X2, mRNA",2.74372E-16,1.11199E-14,paternal
+GB55378,FBgn0010241,XM_006568981.1," PREDICTED: Apis mellifera multidrug resistance protein homolog 49-like (LOC551167), transcript variant X1, mRNA",5.63925E-16,2.25646E-14,paternal
+GB44536,FBgn0053958,XM_006567645.1," PREDICTED: Apis mellifera uncharacterized LOC100576683 (LOC100576683), mRNA",6.59711E-16,2.63219E-14,paternal
+GB45140,FBgn0032129,XM_006566373.1," PREDICTED: Apis mellifera junctophilin-1-like (LOC552577), transcript variant X3, mRNA",2.48931E-15,9.71768E-14,paternal
+GB54986,FBgn0032194,XM_001122093.3," PREDICTED: Apis mellifera putative ATP-dependent RNA helicase DHX33-like (LOC726350), mRNA",2.59669E-15,1.01328E-13,paternal
+GB43189,FBgn0051792,XM_006570329.1," PREDICTED: Apis mellifera probable multidrug resistance-associated protein lethal(2)03659-like (LOC410269), transcript variant X1, mRNA",3.40435E-15,1.32421E-13,paternal
+GB40531,#N/A,XM_006559597.1," PREDICTED: Apis mellifera uncharacterized LOC100578051 (LOC100578051), transcript variant X2, mRNA",1.37519E-14,5.22632E-13,paternal
+GB46853,FBgn0261976,XM_006559749.1," PREDICTED: Apis mellifera DNA replication complex GINS protein PSF2 (Psf2), transcript variant X2, mRNA",6.65419E-14,2.45158E-12,paternal
+GB46952,FBgn0026319,XM_392288.5," PREDICTED: Apis mellifera TNF receptor-associated factor 4-like (LOC408754), transcript variant X4, mRNA",6.65419E-14,2.45158E-12,paternal
+GB42541,FBgn0052698,XM_006559798.1," PREDICTED: Apis mellifera carbonic anhydrase-related protein 10-like (LOC413383), transcript variant X3, mRNA",2.64206E-13,9.35966E-12,maternal
+GB55376,#N/A,XR_411314.1," PREDICTED: Apis mellifera uncharacterized LOC100577032 (LOC100577032), transcript variant X1, ncRNA",3.75709E-13,1.32234E-11,maternal
+GB46939,#N/A,#N/A,#N/A,7.3761E-13,2.55554E-11,paternal
+GB47788,FBgn0261588,XM_006564045.1," PREDICTED: Apis mellifera pou domain motif 3 (pdm3), transcript variant X2, mRNA",8.07041E-13,2.78719E-11,paternal
+GB53012,FBgn0010473,XM_003251322.2," PREDICTED: Apis mellifera immunoglobulin-like and fibronectin type III domain containing 10 (IGFn3-10), transcript variant X1, mRNA",2.0316E-12,6.89918E-11,paternal
+GB55864,FBgn0040251,XM_001120991.3," PREDICTED: Apis mellifera glucuronosyltransferase (LOC725106), mRNA",2.25214E-12,7.62688E-11,paternal
+GB44041,FBgn0005677,XM_394482.5," PREDICTED: Apis mellifera uncharacterized LOC411009 (LOC411009), transcript variant X6, mRNA",3.02336E-12,1.01611E-10,paternal
+GB48270,#N/A,XM_003249275.2," PREDICTED: Apis mellifera uncharacterized LOC100577045 (LOC100577045), transcript variant X1, mRNA",4.17619E-12,1.39206E-10,paternal
+GB45831,FBgn0052528,XM_393249.5," PREDICTED: Apis mellifera alpha-parvin-like (LOC409755), mRNA",4.88478E-12,1.62216E-10,paternal
+GB55665,FBgn0015816,XM_006569083.1," PREDICTED: Apis mellifera SLY-1 homologous (LOC410849), mRNA",5.14278E-12,1.70378E-10,paternal
+GB40734,#N/A,XM_001121298.3," PREDICTED: Apis mellifera fructose-bisphosphate aldolase (LOC725455), mRNA",1.04814E-11,3.41793E-10,paternal
+GB51058,#N/A,XM_006566016.1," PREDICTED: Apis mellifera limpet (Lmpt), transcript variant X5, mRNA",1.11679E-11,3.63211E-10,paternal
+GB52761,FBgn0083981,XM_394014.4," PREDICTED: Apis mellifera runt-related transcription factor 1-like (LOC410535), transcript variant X9, mRNA",1.85667E-11,5.95704E-10,paternal
+GB42156,FBgn0035101,NM_001204751.1," Apis mellifera neural precursor cell expressed, developmentally down-regulated gene 9 (Nedd9), mRNA",1.97764E-11,6.33681E-10,paternal
+GB44254,#N/A,XM_395056.5," PREDICTED: Apis mellifera uncharacterized LOC411586 (LOC411586), transcript variant X2, mRNA",2.12233E-11,6.7893E-10,paternal
+GB52601,#N/A,XM_003249196.2," PREDICTED: Apis mellifera uncharacterized LOC100576405 (LOC100576405), transcript variant X1, mRNA",4.4897E-11,1.4072E-09,paternal
+GB52585,#N/A,XR_407784.1," PREDICTED: Apis mellifera uncharacterized LOC102656347 (LOC102656347), transcript variant X14, ncRNA",4.4897E-11,1.4072E-09,paternal
+GB54114,#N/A,XM_393474.5," PREDICTED: Apis mellifera ubiquitin carboxyl-terminal hydrolase 48-like (LOC409985), transcript variant X2, mRNA",4.62322E-11,1.44673E-09,paternal
+GB49106,FBgn0250789,XM_006558395.1," PREDICTED: Apis mellifera spectrin alpha chain-like (LOC551291), mRNA",6.75314E-11,2.09045E-09,paternal
+GB53048,#N/A,XR_411511.1," PREDICTED: Apis mellifera uncharacterized LOC102655409 (LOC102655409), transcript variant X3, ncRNA",1.40731E-10,4.26442E-09,paternal
+GB44648,FBgn0261041,XM_003251054.2," PREDICTED: Apis mellifera voltage-dependent calcium channel subunit alpha-2/delta-3-like (LOC408841), transcript variant X1, mRNA",1.69987E-10,5.1255E-09,paternal
+GB47891,#N/A,XM_006557278.1," PREDICTED: Apis mellifera tyrosine-protein kinase transmembrane receptor Ror (Ror), mRNA",2.16905E-10,6.504E-09,paternal
+GB51041,FBgn0259100,XM_006566223.1," PREDICTED: Apis mellifera uncharacterized protein CG42248-like (LOC724417), mRNA",2.9845E-10,8.85939E-09,maternal
+GB43230,FBgn0001253,XM_003251496.2," PREDICTED: Apis mellifera prolow-density lipoprotein receptor-related protein 1-like (LOC100576279), transcript variant X1, mRNA",3.01855E-10,8.95775E-09,paternal
+GB55765,FBgn0032187,XM_006560969.1," PREDICTED: Apis mellifera zinc finger protein 714-like (LOC100576901), mRNA",3.51265E-10,1.03956E-08,paternal
+GB40135,FBgn0030815,XM_001122133.3," PREDICTED: Apis mellifera carboxypeptidase B-like (LOC726391), mRNA",8.44492E-10,2.43863E-08,paternal
+GB45988,#N/A,XM_006563197.1," PREDICTED: Apis mellifera lachesin-like (LOC410655), transcript variant X5, mRNA",1.42896E-09,4.04386E-08,paternal
+GB51290,FBgn0003944,XM_006559346.1," PREDICTED: Apis mellifera ultrabithorax (Ubx), transcript variant X5, mRNA",2.40187E-09,6.68096E-08,Africanized
+GB46330,#N/A,XM_392407.5," PREDICTED: Apis mellifera neurogenic protein mastermind (mam), mRNA",3.5785E-09,9.82507E-08,paternal
+GB54852,#N/A,XM_006562517.1," PREDICTED: Apis mellifera PDGF-and VEGF-receptor related (Pvr), mRNA",6.28797E-09,1.70106E-07,paternal
+GB53555,#N/A,XR_411865.1," PREDICTED: Apis mellifera uncharacterized LOC100576661 (LOC100576661), transcript variant X2, ncRNA",8.01534E-09,2.15463E-07,paternal
+GB55767,#N/A,XM_006560969.1," PREDICTED: Apis mellifera zinc finger protein 714-like (LOC100576901), mRNA",1.38463E-08,3.6517E-07,paternal
+GB48816,FBgn0033791,XM_006569193.1," PREDICTED: Apis mellifera derailed 2 (Drl2), transcript variant X7, mRNA",1.46662E-08,3.85372E-07,paternal
+GB48960,FBgn0035733,XM_006565329.1," PREDICTED: Apis mellifera dexamethasone-induced Ras-related protein 1-like (LOC409966), partial mRNA",1.62063E-08,4.24429E-07,paternal
+GB42188,#N/A,XM_006557379.1," PREDICTED: Apis mellifera serine/threonine-protein phosphatase 4 regulatory subunit 1-like (LOC726544), transcript variant X5, mRNA",2.44673E-08,6.31462E-07,paternal
+GB55768,FBgn0033089,XM_001120773.3," PREDICTED: Apis mellifera peptidyl-prolyl cis-trans isomerase H-like (LOC726409), mRNA",4.69214E-08,1.17554E-06,paternal
+GB55831,#N/A,XM_006560901.1," PREDICTED: Apis mellifera tyrosine decarboxylase 1 (Tdc1), transcript variant X2, mRNA",4.69214E-08,1.17554E-06,paternal
+GB54181,FBgn0001105,XM_006562979.1," PREDICTED: Apis mellifera G protein beta subunit 2 (LOC410497), transcript variant X2, mRNA",4.91997E-08,1.22915E-06,paternal
+GB42703,#N/A,XM_006561657.1," PREDICTED: Apis mellifera uncharacterized LOC102656101 (LOC102656101), mRNA",7.54495E-08,1.84991E-06,paternal
+GB47049,#N/A,XM_006568442.1," PREDICTED: Apis mellifera uncharacterized LOC725508 (LOC725508), transcript variant X2, mRNA",9.22481E-08,2.23652E-06,paternal
+GB43603,#N/A,#N/A,#N/A,1.02987E-07,2.48086E-06,paternal
+GB49268,#N/A,XM_006571417.1," PREDICTED: Apis mellifera NMDA kainate sensitive receptor (LOC410788), transcript variant X1, mRNA",1.46305E-07,3.45195E-06,paternal
+GB47869,#N/A,XM_006557271.1," PREDICTED: Apis mellifera uncharacterized LOC102654281 (LOC102654281), transcript variant X1, mRNA",1.72937E-07,4.05096E-06,paternal
+GB50142,FBgn0020269,XM_001121838.3," PREDICTED: Apis mellifera uncharacterized LOC726068 (LOC726068), mRNA",1.74116E-07,4.07564E-06,paternal
+GB40112,#N/A,XM_006560320.1," PREDICTED: Apis mellifera uncharacterized LOC410462 (LOC410462), mRNA",1.85809E-07,4.33997E-06,paternal
+GB53593,#N/A,XM_006559210.1," PREDICTED: Apis mellifera uncharacterized LOC724285 (LOC724285), mRNA",1.8799E-07,4.38986E-06,paternal
+GB51813,FBgn0030596,XM_624767.4," PREDICTED: Apis mellifera GMC oxidoreductase 2 (GMCOX2), mRNA",3.66327E-07,8.30021E-06,paternal
+GB45511,#N/A,XM_396944.5," PREDICTED: Apis mellifera Wnt10 protein (Wnt10), mRNA",4.46256E-07,1.00067E-05,paternal
+GB55263,#N/A,XM_003251549.2," PREDICTED: Apis mellifera putative fatty acyl-CoA reductase CG5065-like (LOC100576414), mRNA",5.04989E-07,1.12334E-05,paternal
+GB45812,FBgn0024277,XM_006568630.1," PREDICTED: Apis mellifera trio protein (trio), transcript variant X3, mRNA",1.15414E-06,2.44218E-05,paternal
+GB51522,#N/A,XM_001120677.3," PREDICTED: Apis mellifera LIM homeobox transcription factor 1-beta-like (LOC724778), transcript variant X1, mRNA",1.25032E-06,2.63656E-05,paternal
+GB51217,#N/A,#N/A,#N/A,1.43257E-06,2.98541E-05,European
+GB42761,FBgn0067864,XM_006561604.1," PREDICTED: Apis mellifera inactivation no afterpotential D (inaD), transcript variant X2, mRNA",2.65275E-06,5.29319E-05,paternal
+GB50524,FBgn0087039,XM_001122154.3," PREDICTED: Apis mellifera SECIS-binding protein 2 (Sbp2), mRNA",3.99266E-06,7.76988E-05,paternal
+GB40090,#N/A,#N/A,#N/A,6.80755E-06,0.000128682,paternal
+GB48055,FBgn0029843,XM_006568054.1," PREDICTED: Apis mellifera neprilysin 1 (Nep1), transcript variant X1, mRNA",1.96674E-05,0.000343812,paternal
+GB51296,#N/A,XR_408288.1," PREDICTED: Apis mellifera uncharacterized LOC102655164 (LOC102655164), ncRNA",2.11249E-05,0.000368025,paternal
+GB44601,#N/A,XM_006567927.1," PREDICTED: Apis mellifera THAP domain-containing protein 4-like (LOC100578382), mRNA",2.59492E-05,0.000446196,paternal
+GB44787,#N/A,XM_006569585.1," PREDICTED: Apis mellifera Wnt4 protein (Wnt4), transcript variant X1, mRNA",2.59947E-05,0.000446899,paternal
+GB53963,#N/A,XM_006571647.1," PREDICTED: Apis mellifera short spindle protein 4-like (LOC408631), transcript variant X1, mRNA",2.71193E-05,0.000464272,maternal
+GB41242,FBgn0011584,XM_006569223.1," PREDICTED: Apis mellifera translocation protein 1 (Trp1), transcript variant X1, mRNA",3.03248E-05,0.000514994,paternal
+GB42728,FBgn0260993,XM_006561536.1," PREDICTED: Apis mellifera sodium channel protein paralytic (Para), transcript variant X27, mRNA",4.98469E-05,0.000815056,paternal
+GB49060,#N/A,#N/A,#N/A,0.000162147,0.002396445,paternal
+GB47793,#N/A,#N/A,#N/A,0.000381667,0.00512703,paternal
+GB45474,FBgn0261698,XM_006570941.1," PREDICTED: Apis mellifera potassium channel subfamily T member 1-like (LOC413159), mRNA",0.000397757,0.005308842,paternal
+GB42585,#N/A,XM_006561867.1," PREDICTED: Apis mellifera cuticular protein 9 (CPR9), transcript variant X1, mRNA",0.000601417,0.007608928,paternal
+GB43054,FBgn0261259,XM_006560727.1," PREDICTED: Apis mellifera jazigo (LOC409786), transcript variant X1, mRNA",0.000657073,0.008230943,paternal
