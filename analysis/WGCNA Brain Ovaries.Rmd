@@ -17,12 +17,12 @@ library(RColorBrewer)
 
 ```{r data}
 #read in data
-active_brain<-read.table("activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
-active_FO<-read.table("activeReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
-sterile_brain<-read.table("sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame() 
-sterile_FO<-read.table("sterileReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
+active_brain<-read.table("data/activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
+active_FO<-read.table("data/activeReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
+sterile_brain<-read.table("data/sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame() 
+sterile_FO<-read.table("data/sterileReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
 
-all_expr<-read.table("all_expr.txt",header=T)%>%as.data.frame()
+all_expr<-read.table("data/all_expr.txt",header=T)%>%as.data.frame()
 
 
 
@@ -32,7 +32,7 @@ fbo_doe<-read.table("FBO_doe.txt",header=T,stringsAsFactors = F)%>%as.data.frame
 brain_doe<-read.table("pDataASE_brain.txt",header=T,stringsAsFactors = F)%>%as.data.frame()%>%mutate(Tissue="Brain",Allele=parent,Block=Block,Line=line)%>%select(-SampleID,-Unk_Identifier, -S_num, -subspecies,-line, -parent)
 pData_FBO<-read.table("pData_FBO.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
 
-all_info<-read.table("all_sample_info.pData.txt",header=T,row.names = 1)%>%as.data.frame()
+all_info<-read.table("data/all_sample_info.pData.txt",header=T,row.names = 1)%>%as.data.frame()
 
 ##subset all genes and info into brain and FBO
 
