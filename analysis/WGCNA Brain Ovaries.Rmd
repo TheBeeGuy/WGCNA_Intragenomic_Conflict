@@ -767,8 +767,10 @@ all(moduleDEG_PSGE_genes_results$module_name==moduleDMLgenes_results$module_name
 
 
 module_DEG_DML_PSGE_results<-left_join(moduleDMLgenes_results,moduleDEG_PSGE_genes_results)
+ovary_pvalues<-tissue_Pvalue[[2]]$Rep_status%>%as.data.frame()
+ovary_pvalues$module_name<-rownames(tissue_Pvalue[[2]])
 
-
+module_DEG_DML_PSGE_results<-left_join(module_DEG_DML_PSGE_results, ovary_pvalues)
 
 
 write.csv(moduleDMLgenes_results,"../output/moduleDMLoverlap_results.csv")
@@ -825,7 +827,7 @@ consTOM = consTomDS%>%as.matrix()
 # Read in the annotation file
 annot <-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)
 # Select modules
-modules =  "52";##select which modules you want to see
+modules =  "21";##select which modules you want to see
 goodgenes<-net$goodGenes
 # Select module probes
 probes = colnames(multiExpr[[1]]$data)[goodgenes]
