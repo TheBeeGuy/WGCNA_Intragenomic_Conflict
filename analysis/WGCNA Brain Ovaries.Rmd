@@ -11,7 +11,6 @@ library(WGCNA)
 library(viridis)
 library(KEGGprofile)
 library(DESeq2)
-library(igraph)
 library(RColorBrewer)
 ```
 
@@ -641,6 +640,12 @@ Hubgenes_Tissue<-cbind(Hubgenes_brain,Hubgenes_FBO)
 
 ```
 
+```{r DEG sanity check gene lists}
+all_mod_genes<-multiExpr[[1]]$data%>%colnames()
+overlaps_DEG_background<-intersect(DEG_reproductive$ID,all_mod_genes)
+DEG_reproductive<-DEG_reproductive$ID
+DEG_reproductive<-DEG_reproductive$ID
+```
 
 ```{r overlaps DMLs}
 #read in DMLS and get gene lists immediately
@@ -648,8 +653,6 @@ active_parentDML<-read.csv(file = "../DMLgene_lists_05-01-19/rep_parent_DMLgenes
 active_strainDML<-read.csv(file = "../DMLgene_lists_05-01-19/rep_strain_DMLgenes.csv")%>%select(V9)
 sterile_parentDML<-read.csv(file = "../DMLgene_lists_05-01-19/sterile_parent_DMLgenes.csv")%>%select(V9)
 sterile_strainDML<-read.csv(file = "../DMLgene_lists_05-01-19/sterile_strain_DMLgenes.csv")%>%select(V9)
-
-
 
 
 #read in beebase ids
@@ -673,45 +676,69 @@ included_brains_fig<-c(NA,pvalues[[1]]$min<0.05)
 included_ovaries_fig<-c(NA,pvalues[[2]]$min<0.05)
 
 #get overlaps for active and sterile
-active_parent_overlap<-sapply(mod_sig_beebase,m_intersect,var2=activeDMLgenes)
-active_strain_overlap<-sapply(mod_sig_beebase,m_intersect,var2=activeDMLgenes)
+active_parent_overlap<-sapply(mod_sig_beebase,m_intersect,var2=active_parentDML$V9)
+active_strain_overlap<-sapply(mod_sig_beebase,m_intersect,var2=active_strainDML$V9)
 
-sterile_parent_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterileDMLgenes)
-sterile_strain_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterileDMLgenes)
+sterile_parent_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterile_parentDML$V9)
+sterile_strain_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterile_strainDML$V9)
 
-moduleDML_overlaps<-cbind(module_name,module_size,active_overlap,sterile_overlap)
+moduleDML_overlaps<-cbind(module_name,module_size,active_parent_overlap,active_strain_overlap,sterile_parent_overlap,sterile_strain_overlap)
 
 
 
 #Hypergeometric tests for active genes
 
-act_length<-activeDMLgenes%>%unique_length()##length active
-ster_length<-sterileDMLgenes%>%unique_length()##length active
+##length active parent
+act_parent_length<-active_parentDML$V9%>%unique_length()
+
+##length active strain
+act_strain_length<-active_strainDML$V9%>%unique_length()
+
+##sterile parent
+ster_parent_length<-sterile_parentDML$V9%>%unique_length()
+
+##sterile strain
+ster_strain_length<-sterile_strainDML$V9%>%unique_length()
+
 background<-14086
 
-#active overlaps
-activeDML_pvalue<-c()
+#active parent overlaps
+active_parentDML_pvalue<-c()
 for(mod in 1:length(module_name)){
-activeDML_pvalue[mod]<-1-phyper(active_overlap[mod], act_length, background-act_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+active_parentDML_pvalue[mod]<-1-phyper(active_parent_overlap[mod], act_parent_length, background-act_parent_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
 }
 
-#sterile overlaps
-sterileDML_pvalue<-c()
+
+##active strain overlaps
+active_strainDML_pvalue<-c()
 for(mod in 1:length(module_name)){
-sterileDML_pvalue[mod]<-1-phyper(sterile_overlap[mod], ster_length, background-ster_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+active_strainDML_pvalue[mod]<-1-phyper(active_strain_overlap[mod], act_strain_length, background-act_strain_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+##sterile strain overlaps
+ster_strainDML_pvalue<-c()
+for(mod in 1:length(module_name)){
+ster_strainDML_pvalue[mod]<-1-phyper(sterile_strain_overlap[mod], ster_strain_length, background-ster_strain_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+
+#sterile parent overlaps
+ster_parentDML_pvalue<-c()
+for(mod in 1:length(module_name)){
+ster_parentDML_pvalue[mod]<-1-phyper(sterile_parent_overlap[mod], ster_parent_length, background-ster_parent_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
 }
 
 
 ##get overlaps for DEGs
-active_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=PSGE_active)
+active_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=PSGE_active$ID)
 
-sterile_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=PSGE_sterile)
+sterile_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=PSGE_sterile$ID)
 
 DEG_reproductive_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_reproductive)
 
 #length of genes
-sterile_PSGE_length<-PSGE_sterile%>%unique_length()##length active psge
-active_PSGE_length<-PSGE_active%>%unique_length()#length sterile psge
+sterile_PSGE_length<-PSGE_sterile$ID%>%unique_length()##length active psge
+active_PSGE_length<-PSGE_active$ID%>%unique_length()#length sterile psge
 DEG_length<-DEG_reproductive%>%unique_length()#length deg
 
 #Sterlie psge oerlaps
@@ -729,24 +756,24 @@ activePSGE_repstat_pvalue[mod]<-1-phyper(active_PSGE_module_overlap[mod], active
 #DEG_opverlaps
 DEG_repstat_pvalue<-c()
 for(mod in 1:length(module_name)){
-activePSGE_repstat_pvalue[mod]<-1-phyper(DEG_reproductive_module_overlap[mod], DEG_length, background-DEG_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+DEG_repstat_pvalue[mod]<-1-phyper(DEG_reproductive_module_overlap[mod], DEG_length, background-DEG_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
 }
 
 moduleDEG_PSGE_genes_results<-cbind(module_name,module_size,active_PSGE_module_overlap,sterile_PSGE_module_overlap,DEG_reproductive_module_overlap,activePSGE_repstat_pvalue,sterilePSGE_repstat_pvalue,DEG_repstat_pvalue)%>%as.data.frame()
 
 #creating data sets
-moduleDMLgenes_results<-cbind(moduleDML_overlaps,activeDML_pvalue,sterileDML_pvalue)%>%as.data.frame()
-all(moduleDEGgenes_results$module_name==moduleDMLgenes_results$module_name)
+moduleDMLgenes_results<-cbind(moduleDML_overlaps,active_parentDML_pvalue,active_strainDML_pvalue, ster_parentDML_pvalue, ster_strainDML_pvalue)%>%as.data.frame()
+all(moduleDEG_PSGE_genes_results$module_name==moduleDMLgenes_results$module_name)
 
 
-module_DEG_DML_results<-left_join(moduleDMLgenes_results,moduleDEGgenes_results)
+module_DEG_DML_PSGE_results<-left_join(moduleDMLgenes_results,moduleDEG_PSGE_genes_results)
 
 
 
 
 write.csv(moduleDMLgenes_results,"../output/moduleDMLoverlap_results.csv")
-write.csv(moduleDEGgenes_results,"../output/moduleDEGoverlap_results.csv")
-write.csv(module_DEG_DML_results,"../output/module_DEG_DML_overlap_results.csv") 
+write.csv(moduleDEG_PSGE_genes_results,"../output/moduleDEG_PSGE_overlap_results.csv")
+write.csv(module_DEG_DML_PSGE_results,"../output/module_DEG_DML_PSGE_overlap_results.csv") 
 
 ##looking at specific modules
 active_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_active )
@@ -757,7 +784,9 @@ sterile_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_sterile )
 
 
 ```{r contingency tables}
-bin_activeDML<-activeDML_pvalue[-1]<0.05
+
+
+bin_active_parent_DML<-active_parentDML_pvalue[-1]<0.05
 bin_sterileDML<-sterileDML_pvalue[-1]<0.05
 bin_rep_status_ovary<-moduleTraitPvalue[[2]]$Rep_status<0.05
 bin_combinedDML<-activeDML_pvalue[-1]<0.05 | sterileDML_pvalue[-1]<0.05
@@ -796,7 +825,7 @@ consTOM = consTomDS%>%as.matrix()
 # Read in the annotation file
 annot <-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)
 # Select modules
-modules =  "3";##select which modules you want to see
+modules =  "52";##select which modules you want to see
 goodgenes<-net$goodGenes
 # Select module probes
 probes = colnames(multiExpr[[1]]$data)[goodgenes]
