@@ -150,9 +150,14 @@ dds_all_FBO <- DESeqDataSetFromMatrix(
     colData = all_info[all_info$Tissue=="FBO",],
     design = ~ Rep_status+MatxPat+Block)
 
-keep <- rowSums(counts(dds_all)>=10) >= 6 #filter genes present in at least 12 samples with counts at least 10
+
+##which genes to keep?
+keep <- rowSums(counts(dds_all)>=40) >= 3 #filter genes present in at least 12 samples with counts at least 40
+keep_FBO <- rowSums(counts(dds_all_FBO,normalize=F)>=20) >= 3 ###only use this if you want to use different genes in each data set
+
+
 dds_all<-dds_all[keep,]
-dds_all_FBO <- dds_all_FBO[keep,]
+dds_all_FBO <- dds_all_FBO[keep_FBO,]
 dds_all_brain<-dds_all_brain[keep,]
 
 ##various transformations
@@ -527,7 +532,7 @@ all(gene_entrez$Beebase==colnames(MEdata))
 
 ##this line of code subs in the entrez, which is used for the KEGGs
 #However, beebase useful for the overlaps with DMLs
-colnames(MEdata)<-gene_entrez$Entrez
+#colnames(MEdata)<-gene_entrez$Entrez
 
 
 
@@ -621,7 +626,7 @@ ster_parent_length<-sterile_parentDML$V9%>%unique_length()
 ##sterile strain
 ster_strain_length<-sterile_strainDML$V9%>%unique_length()
 
-background<-8323
+background<-12836
 
 #active parent overlaps
 active_parentDML_pvalue<-c()
@@ -692,7 +697,8 @@ module_DEG_DML_PSGE_results<-left_join(moduleDMLgenes_results,moduleDEG_PSGE_gen
 ##adding in reproductive status pvalue from GLM
 ovary_pvalues<-moduleTraitPvalue_ovary[[1]]$Rep_status%>%as.data.frame()
 ovary_pvalues$module_name<-rownames(moduleTraitPvalue_ovary[[1]])
-colnames(ovary_pvalues)<-c("reproductive_pvalue", "module_name")
+ovary_pvalues$ovary_correlation<-moduleTraitCor_ovary[[1]]$Rep_status
+colnames(ovary_pvalues)<-c("reproductive_pvalue", "module_name", "ovary_correlation")
 
 ##combining_everything
 module_DEG_DML_PSGE_results<-left_join(module_DEG_DML_PSGE_results, ovary_pvalues)
