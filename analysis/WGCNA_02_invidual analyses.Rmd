@@ -1,0 +1,1622 @@
+---
+title: "WGCNA Brain Ovaries"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+```{r packages, message=FALSE, warning=FALSE}
+library(data.table)
+library(tidyverse)
+library(WGCNA)
+library(viridis)
+library(KEGGprofile)
+library(DESeq2)
+library(RColorBrewer)
+```
+
+```{r data}
+#read in data
+active_brain<-read.table("../data/activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
+active_FO<-read.table("../data/activeReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
+sterile_brain<-read.table("../data/sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame() 
+sterile_FO<-read.table("../data/sterileReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
+
+all_expr<-read.table("../data/all_expr.txt",header=T)%>%as.data.frame()
+
+
+
+
+#read in sample info
+fbo_doe<-read.table("../data/FBO_doe.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
+brain_doe<-read.table("../data/pDataASE_brain.txt",header=T,stringsAsFactors = F)%>%as.data.frame()%>%mutate(Tissue="Brain",Allele=parent,Block=Block,Line=line)%>%select(-SampleID,-Unk_Identifier, -S_num, -subspecies,-line, -parent)
+pData_FBO<-read.table("../data/pData_FBO.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
+
+all_info<-read.table("../data/all_sample_info.pData.txt",header=T,row.names = 1)%>%as.data.frame()
+
+##subset all genes and info into brain and FBO
+
+rownames(all_expr)<-all_expr$chrmxfeaturexstartxendxID
+all_expr<-all_expr%>%select(-chrmxfeaturexstartxendxID)
+all(colnames(all_expr)==rownames(all_info))
+all_expr_brain<-all_expr[,all_info$Tissue=="Brain"]
+all_expr_ovary<-all_expr[,all_info$Tissue=="FBO"]
+
+
+##read in binary traits
+fbo_trait_binary<-read.table("../data/FBO_doe_binary.txt", header=T)
+brain_trait_binary<-read.table("../data/brain_doe_binary.txt", header=T)
+#REp Status - 0 is sterile, 1 is Reprdouctive
+#MatxPat - 0 is ExA, 1 is AxE
+#Tissue - 0 is FBO, 1 is Brain
+#Allele - 0 is Queen, 1 is Drone
+#Block - 0 is A, 1 is B
+
+##preparing sample info for allelic expression
+all(colnames(fbo_trait_binary)==colnames(brain_trait_binary))
+all_doe_bin<-rbind(fbo_trait_binary,brain_trait_binary)%>%
+    select("Sample","Rep_status","MatxPat","Tissue","Allele","Block")
+
+all(colnames(brain_doe)==colnames(fbo_doe))
+
+all_doe<-rbind(brain_doe,fbo_doe)%>%
+    select("Sample","Rep_status","MatxPat","Tissue","Allele","Block")
+all_doe$Rep_status<-factor(all_doe$Rep_status,levels = c("Sterile","Reproductive"))
+all_doe$MatxPat<-factor(all_doe$MatxPat,levels=c("ExA","AxE"))
+all_doe$Tissue<-factor(all_doe$Tissue,levels=c("FBO","Brain"))
+all_doe$Allele<-factor(all_doe$Allele,levels=c("Queen","Drone"))
+all_doe$Block<-factor(all_doe$Block,levels=c("A","B"))
+all_doe$TissuexRep<- factor(paste0(all_doe$Tissue, all_doe$Rep_status), levels=c("FBOSterile", "FBOReproductive","BrainSterile", "BrainReproductive"))
+
+
+### Preparing all genes sample info
+all_info<-all_info%>%select(Rep_status,Block,MatxPat,Tissue)
+
+all_info$Rep_status<-factor(all_info$Rep_status,levels = c("Sterile","Reproductive"))
+all_info$Block<-factor(all_info$Block,levels=c("A","B"))
+all_info$MatxPat<-factor(all_info$MatxPat,levels=c("ExA","AxE"))
+
+
+info_brain<-all_info%>%filter(Tissue=="Brain")%>%select(-Tissue)
+info_ovary<-all_info%>%filter(Tissue=="FBO")%>%select(-Tissue)
+
+##verifying that same genes come up in data sets
+intersect(active_brain$X,sterile_brain$X)%>%length()
+intersect(sterile_FO$X,active_FO$X)%>%length
+
+
+
+##joining
+brains<-inner_join(active_brain,sterile_brain)
+ovaries<-inner_join(active_FO,sterile_FO)
+
+
+
+#coordinating order of ovary samples
+rownames(fbo_doe)<-fbo_doe$Sample
+ovaries<-ovaries[c("X",fbo_doe$Sample)]
+
+
+#verify that they're in the same order
+all(colnames(brains[,-1])==brain_doe$Sample)
+all(colnames(ovaries[,-1])==fbo_doe$Sample)
+
+##setting rownames
+rownames(brains)<-brains$X
+rownames(ovaries)<-ovaries$X
+ovaries<-ovaries%>%select(-X)
+brains<-brains%>%select(-X)
+
+rownames(all_expr_brain)<-rownames(all_expr)
+rownames(all_expr_ovary)<-rownames(all_expr)
+##genes that overlap
+overlappinggenes<-intersect(rownames(brains),rownames(ovaries))
+
+##subsetting data sets for shared genes
+common_brains<-brains[overlappinggenes,]%>%as.matrix()
+common_brains%>%dim()
+common_ovaries<-ovaries[overlappinggenes,]%>%as.matrix()
+common_ovaries%>%dim()
+
+all(all_doe[all_doe$Tissue=="Brain",]$Sample==colnames(common_brains))
+all(all_doe[all_doe$Tissue=="FBO",]$Sample==colnames(common_ovaries))
+
+dds_brain <- DESeqDataSetFromMatrix(
+    countData = common_brains,
+    colData = all_doe[all_doe$Tissue=="Brain",],
+    design = ~ Rep_status+MatxPat+Allele+Block)
+
+dds_FBO <- DESeqDataSetFromMatrix(
+    countData = common_ovaries,
+    colData = all_doe[all_doe$Tissue=="FBO",],
+    design = ~ Rep_status+MatxPat+Allele+Block)
+
+
+
+all(all_info[all_info$Tissue=="Brain",]$Sample==colnames(all_expr_brain))
+all(all_info[all_info$Tissue=="FBO",]$Sample==colnames(all_expr_ovary))
+
+dds_all<- DESeqDataSetFromMatrix(
+    countData = all_expr,
+    colData = all_info,
+    design = ~ Rep_status+MatxPat+Block+Tissue)
+
+
+dds_all_brain<- DESeqDataSetFromMatrix(
+    countData = all_expr_brain,
+    colData = all_info[all_info$Tissue=="Brain",],
+    design = ~ Rep_status+MatxPat+Block)
+dds_all_FBO <- DESeqDataSetFromMatrix(
+    countData = all_expr_ovary,
+    colData = all_info[all_info$Tissue=="FBO",],
+    design = ~ Rep_status+MatxPat+Block)
+
+keep <- rowSums(counts(dds_all)>=10) >= 6 #filter genes present in at least 12 samples with counts at least 10
+dds_all<-dds_all[keep,]
+dds_all_FBO <- dds_all_FBO[keep,]
+dds_all_brain<-dds_all_brain[keep,]
+
+##various transformations
+vst_brain<-vst(dds_brain)%>%assay() #variance stabilized
+vst_FBO<-vst(dds_FBO)%>%assay()
+
+vst_all_brain<-vst(dds_all_brain)%>%assay() #variance stabilized
+vst_all_FBO<-vst(dds_all_FBO)%>%assay()
+
+vst_all<-vst(dds_all)%>%assay()
+
+
+ntd_brain<-normTransform(dds_brain)%>%assay() #log trnasform
+ntd_FBO<-normTransform(dds_FBO)%>%assay()
+
+#super slow
+#rlog_brain<-rlog(dds_brain)%>%assay() #regularized log
+#rlog_FBO<-rlog(dds_FBO)%>%assay()
+
+
+##subsetting each data set
+activebrain_shared<-active_brain[active_brain$X %in% overlappinggenes,-1]%>%as.matrix()
+sterilebrain_shared<-sterile_brain[sterile_brain$X %in% overlappinggenes,-1]%>%as.matrix()
+activeovaries_shared<-active_FO[active_FO$X %in% overlappinggenes,-1]%>%as.matrix()
+sterileovaries_shared<-sterile_FO[sterile_FO$X %in% overlappinggenes,-1]%>%as.matrix()
+
+rownames(activebrain_shared)<-
+    rownames(sterilebrain_shared)<-
+    rownames(activeovaries_shared)<-
+    rownames(sterileovaries_shared)<-
+    overlappinggenes
+
+
+```
+
+```{r DEG and PSGE overlaps}
+PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
+PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
+DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
+
+```
+
+```{r WGCNA ovary}
+options(stringAsFactors = FALSE)
+enableWGCNAThreads()
+
+# We work with two sets:
+nSets = 1;
+
+# For easier labeling of plots, create a vector holding descriptive names of the two sets.
+setLabels = c( "ovaries")
+shortLabels = c("FBO")
+# Form multi-set expression data: columns starting from 9 contain actual expression data.
+ovaryExpr = vector(mode = "list", length = nSets)
+
+###use ntd_brain, vst_brain,  rlog_brain, or common_brains
+##use ntd_FBO, vst_FBO, rlog_FBO, or common_ovaries
+
+
+
+ovaryExpr[[1]] = list(data=t(vst_all_FBO))
+
+for(i in 1:nSets){
+    ovaryExpr[[i]]$data<- apply(ovaryExpr[[i]]$data,2,as.numeric)
+}
+
+names(ovaryExpr[[1]]$data) <- rownames(vst_all_FBO)
+rownames(ovaryExpr[[1]]$data) = colnames(vst_all_FBO)
+
+
+
+exprSize = checkSets(ovaryExpr)
+
+
+# Form a multi-set structure that will hold the clinical traits.
+ovary_Traits = vector(mode="list", length = nSets);
+for (set in 1:nSets)
+{
+setSamples = rownames(ovaryExpr[[set]]$data);
+traitRows = match(setSamples, rownames(all_info));
+ovary_Traits[[set]] = list(data = all_info[traitRows, ]);
+rownames(ovary_Traits[[set]]$data) =rownames(all_info[traitRows, ]);
+}
+
+collectGarbage();
+set.seed(10)
+# Choose a set of soft-thresholding powers
+powers = c(seq(4,10,by=1), seq(12,20, by=2));
+# Initialize a list to hold the results of scale-free analysis
+powerTables = vector(mode = "list", length = nSets);
+# Call the network topology analysis function for each set in turn
+for (set in 1:nSets)
+powerTables[[set]] = list(data = pickSoftThreshold(ovaryExpr[[set]]$data, powerVector=powers,
+verbose = 2)[[2]])
+
+collectGarbage();
+# Plot the results:
+colors = c("black", "red", "blue", "green")
+# Will plot these columns of the returned scale free analysis tables
+plotCols = c(2,5,6,7)
+colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Median connectivity",
+"Max connectivity");
+# Get the minima and maxima of the plotted points
+ylim = matrix(NA, nrow = 2, ncol = 4);
+for (set in 1:nSets)
+{
+  for (col in 1:length(plotCols))
+  {
+    ylim[1, col] = min(ylim[1, col], powerTables[[set]]$data[, plotCols[col]], na.rm = TRUE);
+    ylim[2, col] = max(ylim[2, col], powerTables[[set]]$data[, plotCols[col]], na.rm = TRUE);
+  }
+}
+# Plot the quantities in the chosen columns vs. the soft thresholding power
+sizeGrWindow(8, 6)
+pdf(file = "../figures/scaleFreeAnalysis.pdf", wi = 8, he = 6)
+par(mfcol = c(2,2));
+par(mar = c(4.2, 4.2 , 2.2, 0.5))
+cex1 = 0.7;
+for (col in 1:length(plotCols)) for (set in 1:nSets)
+{
+  if (set==1)
+  {
+    plot(powerTables[[set]]$data[,1], -sign(powerTables[[set]]$data[,3])*powerTables[[set]]$data[,2],
+         xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
+         main = colNames[col]);
+    addGrid();
+  }
+  if (col==1)
+  {
+    text(powerTables[[set]]$data[,1], -sign(powerTables[[set]]$data[,3])*powerTables[[set]]$data[,2],
+         labels=powers,cex=cex1,col=colors[set]);
+  } else
+    text(powerTables[[set]]$data[,1], powerTables[[set]]$data[,plotCols[col]],
+         labels=powers,cex=cex1,col=colors[set]);
+  if (col==1)
+  {
+    legend("bottomright", legend = setLabels, col = colors, pch = 20) ;
+  } else
+    legend("topright", legend = setLabels, col = colors, pch = 20) ;
+}
+dev.off()
+
+
+net_ovaries = blockwiseConsensusModules(
+ovaryExpr, power = 10, minModuleSize = 30, deepSplit = 2,
+pamRespectsDendro = FALSE,
+ corType="bicor",
+mergeCutHeight = 0.25, numericLabels = TRUE,
+minKMEtoStay = 0,nThreads = 3,
+saveIndividualTOMs = T, saveConsensusTOMs = T, verbose = 5,
+networkType = "signed", maxBlockSize = 14086,
+TOMType = "signed")#can set block size to 15K for single analysis
+
+ovaryMEs = net_ovaries$multiMEs
+ovaryMLabels =net_ovaries$colors;
+# Convert the numeric labels to color labels
+ovaryMColors = labels2colors(ovaryMLabels)
+ovaryTree = net_ovaries$dendrograms[[1]];
+
+
+#consensus modules and colors
+pdf(file = "../figures/Ovary Dendrogram w colors.pdf",width = 8, height = 6)
+plotDendroAndColors(ovaryTree, ovaryMColors[net_ovaries$goodGenes],"Module colors",
+dendroLabels = FALSE, hang = 0.03,
+addGuide = FALSE, guideHang = 0.05,
+main = "Ovary gene dendrogram and module colors")
+dev.off()
+
+
+ save(ovaryMEs, ovaryMLabels,ovaryMColors,ovaryTree,net_ovaries,ovary_Traits,ovaryExpr,setLabels,shortLabels, file = "../data/OvaryModules.RData")
+# load("../data/ConsensusModules_BvsFBO.RData")
+
+
+
+
+```
+
+
+
+
+
+
+
+
+```{r adapting glm ovary brain combined}
+load("../data/OvaryModules.RData")
+
+##setup variables
+nSets=1
+moduleTraitCor_ovary = list();
+moduleTraitPvalue_ovary = list();
+
+
+# Calculate the correlations
+
+for (set in 1:nSets){
+    
+res <- data.frame()
+pvalues<-data.frame()
+ME_names<-colnames(ovaryMEs[[1]]$data)
+
+for (i in ME_names){
+    print(i)
+        
+    trait_i<-ovary_Traits[[set]]$data
+  test<-glm(ovaryMEs[[set]]$data[,i]~trait_i$MatxPat+
+                trait_i$Block+
+                trait_i$Rep_status)
+  test%>%summary()%>%print()
+  ##get coefficients
+  coeff2<-coef(test)[2]
+  coeff3<-coef(test)[3]
+  coeff4<-coef(test)[4]
+  coeff<-data.frame(MatxPat=coeff2,
+                    Block=coeff3,
+                    Rep_status=coeff4,
+                    row.names = i)
+  ##get pvalues
+  pval2<-coef(summary(test))[2,4]
+  pval3<-coef(summary(test))[3,4]
+  pval4<-coef(summary(test))[4,4]
+  pval<-data.frame(MatxPat=pval2,
+                   Block=pval3,
+                   Rep_status=pval4,
+                   row.names = i)
+  pvalues<-rbind(pvalues,pval)
+  res<-rbind(res,coeff)
+  }
+moduleTraitCor_ovary[[set]]<-res
+moduleTraitPvalue_ovary[[set]]<-pvalues
+}
+```
+
+```{r plotting colors}
+###Build consensus figure
+ heat.col<-viridis(100)
+pal<- brewer.pal(11,"RdBu") #or "BrBG"
+
+cols <- c(colorRampPalette(c(pal[11], pal[6]))(51), 
+    colorRampPalette(c(pal[6], pal[1]))(51)[-1])
+```
+
+
+```{r consensus modules figure signed}
+
+
+# Initialize matrices to hold the consensus correlation and p-value
+OvaryCor = matrix(NA, nrow(moduleTraitCor_ovary[[1]]), ncol(moduleTraitCor_ovary[[1]]));
+OvaryPvalue = matrix(NA, nrow(moduleTraitCor_ovary[[1]]), ncol(moduleTraitCor_ovary[[1]]));
+# Find consensus negative correlations
+negative = moduleTraitCor_ovary[[1]] < 0 
+OvaryCor[negative] = pmax(moduleTraitCor_ovary[[1]][negative]);
+OvaryPvalue[negative] = pmax(moduleTraitPvalue_ovary[[1]][negative]);
+# Find consensus positive correlations
+positive = moduleTraitCor_ovary[[1]] > 0 
+OvaryCor[positive] = pmin(moduleTraitCor_ovary[[1]][positive]);
+OvaryPvalue[positive] = pmax(moduleTraitPvalue_ovary[[1]][positive]);
+
+##plotting consensus figure
+
+OvaryPvalue[is.na(OvaryPvalue)]<-1
+OvaryPvalue<-as.data.frame(OvaryPvalue)
+##only display those that are significant
+display<-pmap_dfr(OvaryPvalue,~data.frame(min_MatxPat=..1>0.05 , min_Block=..2>0.05 , min_Rep=..3>0.05))
+
+OvaryCor[display==T]<-NA
+
+pvalues<-OvaryPvalue
+pvalues<-cbind(pvalues,pmap_dfr(pvalues,~data.frame(min=min(..1,..2,..3))))
+
+# keep only those modules with at least 1 pvalue <0.05
+# For brain or ovary alone, it looks better to run the following code to filter figure
+# However to build consensus figure, don't filter yet to keep number of rows the same
+rownames(OvaryCor)<-rownames(moduleTraitCor_ovary[[1]])
+colnames(OvaryCor)<-colnames(moduleTraitCor_ovary[[1]])
+
+OvaryPvalue<-OvaryPvalue[pvalues$min<0.05,]
+OvaryCor<-OvaryCor[pvalues$min<0.05,]
+
+
+textMatrix = paste(signif(OvaryCor, 2)%>%as.matrix(), "\n(P = ",
+signif(OvaryPvalue, 2)%>%as.matrix(), ")", sep = "")
+dim(textMatrix) = dim(OvaryCor)
+
+
+pdf(file = "../figures/OvaryTraitRelationships-signed.pdf", wi = 6, he = 6);
+par(mar = c(6, 8.8, 3, 2.2));
+labeledHeatmap(Matrix = OvaryCor,
+xLabels = colnames(OvaryCor),
+yLabels = rownames(OvaryCor),
+ySymbols = rownames(OvaryCor),
+colorLabels = FALSE,
+colors = cols,
+textMatrix = textMatrix,
+setStdMargins = FALSE,
+cex.text = 0.5,
+zlim = c(-1,1),
+main = paste(" module-trait relationships across\n",
+paste(setLabels, collapse = " and ")))
+dev.off()
+```
+
+
+```{r consensus modules figure unsigned}
+
+
+# Initialize matrices to hold the consensus correlation and p-value
+OvaryCor = matrix(NA, nrow(moduleTraitCor_ovary[[1]]), ncol(moduleTraitCor_ovary[[1]]));
+OvaryPvalue = matrix(NA, nrow(moduleTraitCor_ovary[[1]]), ncol(moduleTraitCor_ovary[[1]]));
+
+# Find consensus positive correlations
+significant = moduleTraitPvalue_ovary[[1]]<0.05 
+OvaryCor[significant] = pmin(abs(moduleTraitCor_ovary[[1]][significant]));
+OvaryPvalue[significant] = pmax(moduleTraitPvalue_ovary[[1]][significant]);
+
+##plotting consensus figure
+# 
+
+textMatrix = paste(signif(OvaryCor, 2)%>%as.matrix(), "\n(P = ",
+signif(OvaryPvalue, 2)%>%as.matrix(), ")", sep = "")
+dim(textMatrix) = dim(OvaryCor)
+
+
+OvaryPvalue[is.na(OvaryPvalue)]<-1
+OvaryPvalue<-as.data.frame(OvaryPvalue)
+# ##only display those that are significant
+ display<-pmap_dfr(OvaryPvalue,~data.frame(min_MatxPat=..1>0.05 , min_Block=..2>0.05 , min_Rep=..3>0.05))
+
+OvaryCor[display==T]<-NA
+
+pvalues<-OvaryPvalue
+pvalues<-cbind(pvalues,pmap_dfr(pvalues,~data.frame(min=min(..1,..2,..3))))
+
+# keep only those modules with at least 1 pvalue <0.05
+# For brain or ovary alone, it looks better to run the following code to filter figure
+# However to build consensus figure, don't filter yet to keep number of rows the same
+rownames(OvaryCor)<-rownames(moduleTraitCor_ovary[[1]])
+colnames(OvaryCor)<-colnames(moduleTraitCor_ovary[[1]])
+
+OvaryPvalue<-OvaryPvalue[pvalues$min<0.05,]
+OvaryCor<-OvaryCor[pvalues$min<0.05,]
+textMatrix<-textMatrix[pvalues$min<0.05,]
+
+
+pdf(file = "../figures/OvaryTraitRelationships-unsigned.pdf", wi = 6, he = 6);
+par(mar = c(6, 8.8, 3, 2.2));
+labeledHeatmap(Matrix = OvaryCor,
+xLabels = colnames(OvaryCor),
+yLabels = rownames(OvaryCor),
+ySymbols = rownames(OvaryCor),
+colorLabels = FALSE,
+colors = cols,
+textMatrix = textMatrix,
+setStdMargins = FALSE,
+cex.text = 0.5,
+zlim = c(-1,1),
+main = paste("unsigned Consensus module-trait relationships across\n",
+paste(setLabels, collapse = " and ")))
+dev.off()
+```
+
+
+
+```{r getting module gene lists}
+#consMEs,consMColors,consMLabels,ME_names
+conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID)
+MEdata<-ovaryExpr[[1]]$data
+gene_name<-colnames(MEdata)%>%as.data.frame
+colnames(gene_name)<-"Beebase"
+gene_entrez<-left_join(gene_name,conversion)%>%distinct
+all(gene_entrez$Beebase==colnames(MEdata))
+
+##this line of code subs in the entrez, which is used for the KEGGs
+#However, beebase useful for the overlaps with DMLs
+colnames(MEdata)<-gene_entrez$Entrez
+
+
+
+
+
+module_significant_genes<-data.frame(background=colnames(MEdata))
+for (i in ME_names){
+  whichModule= sub(i,pattern = "ME",replacement = "")
+  name<-paste(i,"_kME",sep = "")
+  
+genes<-row.names(t(MEdata))[ovaryMLabels==whichModule]
+length(genes)<-length(row.names(t(MEdata)))
+
+name=data.frame("gene"=genes)
+module_significant_genes<-cbind(module_significant_genes,genes)
+}
+colnames(module_significant_genes)<-c("background",ME_names)
+module_significant_genes
+write.csv(module_significant_genes, "../output/WGCNA_ovaryspecific_Sig_Modules_genes_entrez.csv")
+
+##Getting Hub Genes
+power=10
+
+Hubgenes_FBO<-chooseTopHubInEachModule(datExpr = ovaryExpr[[1]]$data, #gene expression data, rows =samples; columns =genes  
+   colorh=ovaryMColors, #module assignments for all rows  
+   omitColors = "grey", 
+   power = power, 
+   type = "signed")
+
+
+
+
+```
+
+```{r DEG sanity check gene lists}
+all_mod_genes<-ovaryExpr[[1]]$data%>%colnames()
+overlaps_DEG_background<-intersect(DEG_reproductive$ID,all_mod_genes)
+DEG_reproductive<-DEG_reproductive$ID
+```
+
+```{r overlaps DMLs}
+#read in DMLS and get gene lists immediately
+active_parentDML<-read.csv(file = "../DMLgene_lists_05-01-19/rep_parent_DMLgenes.csv")%>%select(V9)
+active_strainDML<-read.csv(file = "../DMLgene_lists_05-01-19/rep_strain_DMLgenes.csv")%>%select(V9)
+sterile_parentDML<-read.csv(file = "../DMLgene_lists_05-01-19/sterile_parent_DMLgenes.csv")%>%select(V9)
+sterile_strainDML<-read.csv(file = "../DMLgene_lists_05-01-19/sterile_strain_DMLgenes.csv")%>%select(V9)
+
+
+#read in beebase ids
+mod_sig_beebase<-read.csv("../output/WGCNA_ovaryspecific_Sig_Modules_genes_entrez.csv")%>%select(-X)
+
+#name of modules
+module_name<-mod_sig_beebase%>%colnames()
+
+#get number of gene overlaps
+m_intersect <- function(var1,var2){intersect(var1,var2)%>%unique()%>%length()}
+
+#get number of unique genes
+unique_length<-function(x){length(unique(x))}
+
+#get size of each module
+module_size<-apply(X = mod_sig_beebase,2, FUN = unique_length)
+
+##pvalues set in individ figures
+## is it in the figure? included extra NA for background
+
+included_ovaries_fig<-c(NA,pvalues$min<0.05)
+
+#get overlaps for active and sterile
+active_parent_overlap<-sapply(mod_sig_beebase,m_intersect,var2=active_parentDML$V9)
+active_strain_overlap<-sapply(mod_sig_beebase,m_intersect,var2=active_strainDML$V9)
+
+sterile_parent_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterile_parentDML$V9)
+sterile_strain_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterile_strainDML$V9)
+
+moduleDML_overlaps<-cbind(module_name,module_size,active_parent_overlap,active_strain_overlap,sterile_parent_overlap,sterile_strain_overlap)
+
+
+
+#Hypergeometric tests for active genes
+
+##length active parent
+act_parent_length<-active_parentDML$V9%>%unique_length()
+
+##length active strain
+act_strain_length<-active_strainDML$V9%>%unique_length()
+
+##sterile parent
+ster_parent_length<-sterile_parentDML$V9%>%unique_length()
+
+##sterile strain
+ster_strain_length<-sterile_strainDML$V9%>%unique_length()
+
+background<-8323
+
+#active parent overlaps
+active_parentDML_pvalue<-c()
+for(mod in 1:length(module_name)){
+active_parentDML_pvalue[mod]<-1-phyper(active_parent_overlap[mod], act_parent_length, background-act_parent_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+
+##active strain overlaps
+active_strainDML_pvalue<-c()
+for(mod in 1:length(module_name)){
+active_strainDML_pvalue[mod]<-1-phyper(active_strain_overlap[mod], act_strain_length, background-act_strain_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+##sterile strain overlaps
+ster_strainDML_pvalue<-c()
+for(mod in 1:length(module_name)){
+ster_strainDML_pvalue[mod]<-1-phyper(sterile_strain_overlap[mod], ster_strain_length, background-ster_strain_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+
+#sterile parent overlaps
+ster_parentDML_pvalue<-c()
+for(mod in 1:length(module_name)){
+ster_parentDML_pvalue[mod]<-1-phyper(sterile_parent_overlap[mod], ster_parent_length, background-ster_parent_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+
+##get overlaps for DEGs
+active_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=PSGE_active$ID)
+
+sterile_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=PSGE_sterile$ID)
+
+DEG_reproductive_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_reproductive)
+
+#length of genes
+sterile_PSGE_length<-PSGE_sterile$ID%>%unique_length()##length active psge
+active_PSGE_length<-PSGE_active$ID%>%unique_length()#length sterile psge
+DEG_length<-DEG_reproductive%>%unique_length()#length deg
+
+#Sterlie psge oerlaps
+sterilePSGE_repstat_pvalue<-c()
+for(mod in 1:length(module_name)){
+sterilePSGE_repstat_pvalue[mod]<-1-phyper(sterile_PSGE_module_overlap[mod], sterile_PSGE_length, background-sterile_PSGE_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+#active psge overlaps
+activePSGE_repstat_pvalue<-c()
+for(mod in 1:length(module_name)){
+activePSGE_repstat_pvalue[mod]<-1-phyper(active_PSGE_module_overlap[mod], active_PSGE_length, background-active_PSGE_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+#DEG_opverlaps
+DEG_repstat_pvalue<-c()
+for(mod in 1:length(module_name)){
+DEG_repstat_pvalue[mod]<-1-phyper(DEG_reproductive_module_overlap[mod], DEG_length, background-DEG_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+moduleDEG_PSGE_genes_results<-cbind(module_name,module_size,active_PSGE_module_overlap,sterile_PSGE_module_overlap,DEG_reproductive_module_overlap,activePSGE_repstat_pvalue,sterilePSGE_repstat_pvalue,DEG_repstat_pvalue)%>%as.data.frame()
+
+#creating data sets
+moduleDMLgenes_results<-cbind(moduleDML_overlaps,active_parentDML_pvalue,active_strainDML_pvalue, ster_parentDML_pvalue, ster_strainDML_pvalue)%>%as.data.frame()
+all(moduleDEG_PSGE_genes_results$module_name==moduleDMLgenes_results$module_name)
+
+#combing DEG,DML,PSGE
+module_DEG_DML_PSGE_results<-left_join(moduleDMLgenes_results,moduleDEG_PSGE_genes_results)
+
+##adding in reproductive status pvalue from GLM
+ovary_pvalues<-moduleTraitPvalue_ovary[[1]]$Rep_status%>%as.data.frame()
+ovary_pvalues$module_name<-rownames(moduleTraitPvalue_ovary[[1]])
+colnames(ovary_pvalues)<-c("reproductive_pvalue", "module_name")
+
+##combining_everything
+module_DEG_DML_PSGE_results<-left_join(module_DEG_DML_PSGE_results, ovary_pvalues)
+
+
+write.csv(moduleDMLgenes_results,"../output/ovary_moduleDMLoverlap_results.csv")
+write.csv(moduleDEG_PSGE_genes_results,"../output/ovary_moduleDEG_PSGE_overlap_results.csv")
+write.csv(module_DEG_DML_PSGE_results,"../output/ovary_module_DEG_DML_PSGE_overlap_results.csv") 
+
+##looking at specific modules
+# active_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_active )
+# sterile_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_sterile )
+
+```
+
+
+
+```{r contingency tables}
+
+
+bin_active_parent_DML<-active_parentDML_pvalue[-1]<0.05
+bin_sterileDML<-sterileDML_pvalue[-1]<0.05
+bin_rep_status_ovary<-moduleTraitPvalue[[2]]$Rep_status<0.05
+bin_combinedDML<-activeDML_pvalue[-1]<0.05 | sterileDML_pvalue[-1]<0.05
+
+
+activeDML_ConsRepStatus<-table(bin_activeDML,bin_rep_status_ovary)
+sterilDML_ConsRepStatus<-table(bin_sterileDML,bin_rep_status_ovary)
+bothDML_ConsRepStatus<-table(bin_combinedDML,bin_rep_status_ovary)
+
+chisq.test(activeDML_ConsRepStatus)
+chisq.test(sterilDML_ConsRepStatus)
+chisq.test(bothDML_ConsRepStatus)
+```
+
+
+
+```{r keggs for module genes}
+source("../code/find_kegg.R")
+
+kegg_pathways_WGCNA<-find_keggs(module_significant_genes)
+colnames(kegg_pathways_WGCNA)<-colnames(module_significant_genes)
+
+
+write.csv(kegg_pathways_WGCNA, file = "../output/kegg_pathways_WGCNA_BvFBO.csv")
+#read.csv("../output/kegg_pathways_WGCNA_BvFBO.csv")
+kegg_pathways_WGCNA$ME42
+```
+
+
+```{r exporting consensus to Cytoscape}
+# Recalculate topological overlap if needed
+load("../data/ConsensusModules_BvsFBO.RData")
+Cons_name<-load("../data/consensusTOM-block.1.RData")
+
+consTOM = consTomDS%>%as.matrix()
+# Read in the annotation file
+annot <-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)
+# Select modules
+modules =  "21";##select which modules you want to see
+goodgenes<-net$goodGenes
+# Select module probes
+probes = colnames(multiExpr[[1]]$data)[goodgenes]
+inModule = is.finite(match(consMLabels, modules))[goodgenes];
+modProbes = probes[inModule];
+modGenes = annot$GeneID[match(modProbes, annot$OtherID)][]
+# Select the corresponding Topological Overlap
+modTOM = consTOM[inModule, inModule];
+
+
+dimnames(modTOM) = list(modProbes, modProbes)
+# Export the network into edge and node list files Cytoscape can read
+cyt = exportNetworkToCytoscape(modTOM,
+edgeFile = paste("../network_vis_for_cytoscape/CytoscapeInput-edges-", paste(modules, collapse="-"), ".txt", sep=""),
+nodeFile = paste("../network_vis_for_cytoscape/CytoscapeInput-nodes-", paste(modules, collapse="-"), ".txt", sep=""),
+weighted = TRUE,
+threshold = 0.02,
+nodeNames = modProbes,
+altNodeNames = modGenes,
+nodeAttr = net$colors[goodgenes][inModule]);
+```
+
+
+##deprecated
+
+```{r WGCNA including tissue factor}
+options(stringsAsFactors = FALSE)
+enableWGCNAThreads()
+
+# We work with two sets:
+nSets = 1;
+
+# For easier labeling of plots, create a vector holding descriptive names of the two sets.
+setLabels = c("brains_ovaries")
+shortLabels = c("Brain_FBO")
+# Form multi-set expression data: columns starting from 9 contain actual expression data.
+multiExpr = vector(mode = "list", length = nSets)
+
+###use ntd_brain, vst_brain,  rlog_brain, or common_brains
+##use ntd_FBO, vst_FBO, rlog_FBO, or common_ovaries
+
+
+multiExpr[[1]] = list(data=t(vst_all))
+
+
+for(i in 1:nSets){
+    multiExpr[[i]]$data<- apply(multiExpr[[i]]$data,2,as.numeric)
+}
+
+names(multiExpr[[1]]$data) <- rownames(vst_all)
+rownames(multiExpr[[1]]$data) = colnames(vst_all)
+
+
+exprSize = checkSets(multiExpr)
+
+
+# Form a multi-set structure that will hold the clinical traits.
+Traits = vector(mode="list", length = nSets);
+for (set in 1:nSets)
+{
+setSamples = rownames(multiExpr[[set]]$data);
+traitRows = match(setSamples, all_info$Sample);
+Traits[[set]] = list(data = all_info[traitRows,]);
+#rownames(Traits[[set]]$data) = all_info[traitRows, 1]; ##only need this if not inheriting rownames
+}
+
+collectGarbage();
+
+# Choose a set of soft-thresholding powers
+powers = c(seq(4,10,by=1), seq(12,20, by=2));
+# Initialize a list to hold the results of scale-free analysis
+powerTables = vector(mode = "list", length = nSets);
+# Call the network topology analysis function for each set in turn
+for (set in 1:nSets)
+powerTables[[set]] = list(data = pickSoftThreshold(multiExpr[[set]]$data, powerVector=powers,
+verbose = 2)[[2]])
+
+collectGarbage();
+# Plot the results:
+colors = c("black", "red", "blue", "green")
+# Will plot these columns of the returned scale free analysis tables
+plotCols = c(2,5,6,7)
+colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Median connectivity",
+"Max connectivity");
+# Get the minima and maxima of the plotted points
+ylim = matrix(NA, nrow = 2, ncol = 4);
+for (set in 1:nSets)
+{
+  for (col in 1:length(plotCols))
+  {
+    ylim[1, col] = min(ylim[1, col], powerTables[[set]]$data[, plotCols[col]], na.rm = TRUE);
+    ylim[2, col] = max(ylim[2, col], powerTables[[set]]$data[, plotCols[col]], na.rm = TRUE);
+  }
+}
+# Plot the quantities in the chosen columns vs. the soft thresholding power
+sizeGrWindow(8, 6)
+#pdf(file = "Plots/scaleFreeAnalysis.pdf", wi = 8, he = 6)
+par(mfcol = c(2,2));
+par(mar = c(4.2, 4.2 , 2.2, 0.5))
+cex1 = 0.7;
+for (col in 1:length(plotCols)) for (set in 1:nSets)
+{
+  if (set==1)
+  {
+    plot(powerTables[[set]]$data[,1], -sign(powerTables[[set]]$data[,3])*powerTables[[set]]$data[,2],
+         xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
+         main = colNames[col]);
+    addGrid();
+  }
+  if (col==1)
+  {
+    text(powerTables[[set]]$data[,1], -sign(powerTables[[set]]$data[,3])*powerTables[[set]]$data[,2],
+         labels=powers,cex=cex1,col=colors[set]);
+  } else
+    text(powerTables[[set]]$data[,1], powerTables[[set]]$data[,plotCols[col]],
+         labels=powers,cex=cex1,col=colors[set]);
+  if (col==1)
+  {
+    legend("bottomright", legend = setLabels, col = colors, pch = 20) ;
+  } else
+    legend("topright", legend = setLabels, col = colors, pch = 20) ;
+}
+dev.off()
+
+
+net = blockwiseConsensusModules(
+multiExpr, power = 10, minModuleSize = 30, deepSplit = 2,
+pamRespectsDendro = FALSE,
+ corType="bicor",
+mergeCutHeight = 0.25, numericLabels = TRUE,
+minKMEtoStay = 0,
+saveTOMs = FALSE, verbose = 5,
+networkType = "signed", 
+TOMType = "signed",
+maxBlockSize = 15000)
+
+consMEs = net$multiMEs
+consMLabels = net$colors;
+# Convert the numeric labels to color labels
+consMColors = labels2colors(consMLabels)
+consTree = net$dendrograms[[1]];
+
+par(mfrow = c(1, 2))
+plotDendroAndColors(consTree, consMColors,
+"Module colors",
+dendroLabels = FALSE, hang = 0.03,
+addGuide = TRUE, guideHang = 0.05,
+main = "Consensus gene dendrogram and module colors")
+
+```
+
+
+```{r glm ovary brain with tissue}
+
+
+##setup variables
+nSets=2
+moduleTraitCor = list();
+moduleTraitPvalue = list();
+
+
+# Calculate the correlations
+
+for (set in 1:nSets){
+    
+res <- data.frame()
+pvalues<-data.frame()
+ME_names<-colnames(consMEs[[set]]$data)
+
+for (i in ME_names){
+    print(i)
+        
+    trait_i<-Traits[[set]]$data
+  test<-glm(consMEs[[set]]$data[,i]~trait_i$MatxPat+
+                trait_i$Block+
+                trait_i$Rep_status)
+  test%>%summary()%>%print()
+  ##get coefficients
+  coeff2<-coef(test)[2]
+  coeff3<-coef(test)[3]
+  coeff4<-coef(test)[4]
+  coeff<-data.frame(MatxPat=coeff2,
+                    Block=coeff3,
+                    Rep_status=coeff4,
+                    row.names = i)
+  ##get pvalues
+  pval2<-coef(summary(test))[2,4]
+  pval3<-coef(summary(test))[3,4]
+  pval4<-coef(summary(test))[4,4]
+  pval<-data.frame(MatxPat=pval2,
+                   Block=pval3,
+                   Rep_status=pval4,
+                   row.names = i)
+  pvalues<-rbind(pvalues,pval)
+  res<-rbind(res,coeff)
+  }
+moduleTraitCor[[set]]<-res
+moduleTraitPvalue[[set]]<-pvalues
+}
+
+
+
+##plot
+par(mar=c(5.1,4.1,4.1,2.1))
+par(mfrow = c(1, 1))
+heat.col<-viridis(100)
+textMatrix<-list()
+
+for (set in 1:nSets){
+
+textMatrix[[set]] = paste(signif(moduleTraitCor[[set]]%>%as.matrix(), 2),
+                   "\n(",
+                   signif(moduleTraitPvalue[[set]]%>%as.matrix(), 1),
+                   ")",
+                   sep = "")
+#dim(textMatrix) = dim(moduleTraitCor)
+
+display<-pmap_dfr(moduleTraitPvalue[[set]],~data.frame(min_MatxPat=..1>0.05, min_Block=..2>0.05, min_Rep=..3>0.05))
+
+moduleTraitCor[[set]][display$min_MatxPat==T,1]<-NA
+moduleTraitCor[[set]][display$min_Block==T,2]<-NA
+moduleTraitCor[[set]][display$min_Rep==T,3]<-NA
+
+
+dim(textMatrix[[set]]) = dim(moduleTraitCor[[set]])
+par(mar = c(6, 8.8, 3, 2.2));
+labeledHeatmap(Matrix = moduleTraitCor[[set]],
+xLabels = names(moduleTraitCor[[set]]),
+yLabels = rownames(moduleTraitCor[[set]]),
+ySymbols = rownames(moduleTraitCor[[set]]),
+colorLabels = FALSE,
+colors = heat.col,
+textMatrix = textMatrix[[set]],
+setStdMargins = FALSE,
+cex.text = 0.5,
+zlim = c(-1,1),
+main = paste("Module-traits in", setLabels[set])
+)
+}
+
+
+```
+
+
+
+```{r ovary specific wgcna}
+nSets = 1;
+
+# For easier labeling of plots, create a vector holding descriptive names of the two sets.
+setLabels = c("ovary")
+shortLabels = c("FBO")
+# Form multi-set expression data: columns starting from 9 contain actual expression data.
+multiExpr_ovaries = vector(mode = "list", length = nSets)
+
+multiExpr_ovaries[[1]] = list(data=t(vst_all_FBO))
+
+
+for(i in 1:nSets){
+    multiExpr_ovaries[[i]]$data<- apply(multiExpr_ovaries[[i]]$data,2,as.numeric)
+}
+
+
+
+names(multiExpr_ovaries[[1]]$data) <- rownames(vst_all_FBO)
+rownames(multiExpr_ovaries[[1]]$data) = colnames(vst_all_FBO)
+
+
+
+
+
+exprSize = checkSets(multiExpr_ovaries)
+
+# Form a multi-set structure that will hold the clinical traits.
+ovary_Traits = vector(mode="list", length = nSets);
+for (set in 1:nSets)
+{
+setSamples = rownames(multiExpr_ovaries[[set]]$data);
+traitRows = match(setSamples, rownames(all_info));
+ovary_Traits[[set]] = list(data = all_info[traitRows, ]);
+rownames(ovary_Traits[[set]]$data) =rownames(all_info[traitRows, ]);
+}
+
+collectGarbage();
+set.seed(10)
+
+# Choose a set of soft-thresholding powers
+powers = c(seq(4,10,by=1), seq(12,20, by=2));
+# Initialize a list to hold the results of scale-free analysis
+powerTables = vector(mode = "list", length = nSets);
+# Call the network topology analysis function for each set in turn
+for (set in 1:nSets)
+powerTables[[set]] = list(data = pickSoftThreshold(multiExpr_ovaries[[set]]$data, powerVector=powers,
+verbose = 2)[[2]])
+
+collectGarbage();
+# Plot the results:
+colors = c("black", "red", "blue", "green")
+# Will plot these columns of the returned scale free analysis tables
+plotCols = c(2,5,6,7)
+colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Median connectivity",
+"Max connectivity");
+# Get the minima and maxima of the plotted points
+ylim = matrix(NA, nrow = 2, ncol = 4);
+for (set in 1:nSets)
+{
+  for (col in 1:length(plotCols))
+  {
+    ylim[1, col] = min(ylim[1, col], powerTables[[set]]$data[, plotCols[col]], na.rm = TRUE);
+    ylim[2, col] = max(ylim[2, col], powerTables[[set]]$data[, plotCols[col]], na.rm = TRUE);
+  }
+}
+# Plot the quantities in the chosen columns vs. the soft thresholding power
+sizeGrWindow(8, 6)
+pdf(file = "../figures/scaleFreeAnalysis.pdf", wi = 8, he = 6)
+par(mfcol = c(2,2));
+par(mar = c(4.2, 4.2 , 2.2, 0.5))
+cex1 = 0.7;
+for (col in 1:length(plotCols)) for (set in 1:nSets)
+{
+  if (set==1)
+  {
+    plot(powerTables[[set]]$data[,1], -sign(powerTables[[set]]$data[,3])*powerTables[[set]]$data[,2],
+         xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
+         main = colNames[col]);
+    addGrid();
+  }
+  if (col==1)
+  {
+    text(powerTables[[set]]$data[,1], -sign(powerTables[[set]]$data[,3])*powerTables[[set]]$data[,2],
+         labels=powers,cex=cex1,col=colors[set]);
+  } else
+    text(powerTables[[set]]$data[,1], powerTables[[set]]$data[,plotCols[col]],
+         labels=powers,cex=cex1,col=colors[set]);
+  if (col==1)
+  {
+    legend("bottomright", legend = setLabels, col = colors, pch = 20) ;
+  } else
+    legend("topright", legend = setLabels, col = colors, pch = 20) ;
+}
+dev.off()
+
+
+
+net_ovaries = blockwiseConsensusModules(
+multiExpr_ovaries, power = 10, minModuleSize = 30, deepSplit = 2,
+pamRespectsDendro = FALSE,
+ corType="bicor",
+mergeCutHeight = 0.25, numericLabels = TRUE,
+minKMEtoStay = 0,
+saveTOMs = TRUE, verbose = 5,maxBlockSize = 14086,saveConsensusTOMs = T,
+networkType = "signed", 
+TOMType = "signed")
+
+ovaryMEs = net_ovaries$multiMEs;
+ovaryMLabels = net_ovaries$colors;
+# Convert the numeric labels to color labels
+ovaryMColors = labels2colors(ovaryMLabels)
+ovaryTree = net_ovaries$dendrograms[[1]]
+
+#consensus modules and colors
+pdf(file = "../figures/Indiv_ovary_Dendrogram_colors.pdf",width = 8, height = 6)
+plotDendroAndColors(ovaryTree, ovaryMLabels[net_ovaries$goodGenes],"Module colors",
+dendroLabels = FALSE, hang = 0.03,
+addGuide = FALSE, guideHang = 0.05,
+main = "Individual Ovary gene dendrogram and module colors")
+dev.off()
+
+
+```
+
+```{r ovary comparisons with consensus}
+# Isolate the module labels in the order they appear in ordered module eigengenes
+
+ovaModuleLabels = substring(names(ovaryMEs[[1]]$data), 3)
+consModuleLabels = substring(names(consMEs[[3]]$data), 3)
+
+# Convert the numeric module labels to color labels
+ovaModules = labels2colors(as.numeric(ovaModuleLabels))
+consModules = labels2colors(as.numeric(consModuleLabels))
+
+# Numbers of female and consensus modules
+nOVAMods = length(ovaModules)
+nConsMods = length(consModules)
+
+# Initialize tables of p-values and of the corresponding counts
+pTable = matrix(0, nrow = nOVAMods, ncol = nConsMods);
+CountTbl = matrix(0, nrow = nOVAMods, ncol = nConsMods);
+# Execute all pairwaise comparisons
+for (omod in 1:nOVAMods)
+for (cmod in 1:nConsMods)
+{
+ovaMembers = (ovaryMColors == ovaModules[omod]);
+consMembers = (consMColors == consModules[cmod]);
+pTable[omod, cmod] = -log10(fisher.test(ovaMembers, consMembers, alternative = "greater")$p.value);
+CountTbl[omod, cmod] = sum(ovaryMColors == ovaModules[omod] & consMColors ==
+consModules[cmod])
+}
+
+# Truncate p values smaller than 10^{-50} to 10^{-50}
+pTable[is.infinite(pTable)] = 1.3*max(pTable[is.finite(pTable)]);
+pTable[pTable>50 ] = 50 ;
+# Marginal counts (really module sizes)
+ovaModTotals = apply(CountTbl, 1, sum)
+consModTotals = apply(CountTbl, 2, sum)
+
+# Actual plotting
+sizeGrWindow(10,7 );
+#pdf(file = "Plots/ConsensusVsFemaleModules.pdf", wi = 10, he = 7);
+par(mfrow=c(1,1));
+par(cex = 1.0);
+par(mar=c(8, 10.4, 2.7, 1)+0.3);
+# Use function labeledHeatmap to produce the color-coded table with all the trimmings
+labeledHeatmap(Matrix = pTable,
+xLabels = paste(" ", consModules),
+yLabels = paste(" ", ovaModules),
+colorLabels = TRUE,
+xSymbols = paste("Cons ", consModules, ": ", consModTotals, sep=""),
+ySymbols = paste("Ovary ", ovaModules, ": ", consModTotals, sep=""),
+textMatrix = CountTbl,
+colors = greenWhiteRed(100)[50:100],
+main = "Correspondence of Ovary set-specific and consensus modules",
+cex.text = 1.0, cex.lab = 1.0, setStdMargins = FALSE);
+
+
+```
+
+```{r active specific wgcna}
+nSets = 2;
+
+# For easier labeling of plots, create a vector holding descriptive names of the two sets.
+setLabels = c("active brain", "sterile ovaries")
+shortLabels = c("ABrain","Aovaries")
+# Form multi-set expression data: columns starting from 9 contain actual expression data.
+multiExpr_active = vector(mode = "list", length = nSets)
+
+multiExpr_active[[1]] = list(data=t(activebrain_shared))
+multiExpr_active[[2]] = list(data=t(activeovaries_shared))
+
+
+for(i in 1:nSets){
+    multiExpr_active[[i]]$data<- apply(multiExpr_active[[i]]$data,2,as.numeric)
+}
+
+
+
+names(multiExpr_active[[1]]$data) <- rownames(activebrain_shared)
+rownames(multiExpr_active[[1]]$data) = names(active_brain[-1])
+
+names(multiExpr_active[[2]]$data) <- rownames(activeovaries_shared)
+rownames(multiExpr_active[[2]]$data) = names(active_FO[-1])
+
+
+
+exprSize = checkSets(multiExpr_active)
+
+
+net_active = blockwiseConsensusModules(
+multiExpr_active, power = 10, minModuleSize = 30, deepSplit = 2,
+pamRespectsDendro = FALSE,
+ corType="bicor",
+mergeCutHeight = 0.25, numericLabels = TRUE,
+minKMEtoStay = 0,
+saveTOMs = TRUE, verbose = 5,
+networkType = "signed", 
+TOMType = "signed")
+
+activeMEs = net_active$multiMEs;
+activeMLabels = net_active$colors;
+# Convert the numeric labels to color labels
+activeMColors = labels2colors(activeMLabels)
+activeTree = net_active$dendrograms[[1]]
+
+
+
+```
+
+```{r active comparisons with consensus}
+# Isolate the module labels in the order they appear in ordered module eigengenes
+
+activeModuleLabels = substring(names(activeMEs[[1]]$data), 3)
+consModuleLabels = substring(names(consMEs[[3]]$data), 3)
+
+# Convert the numeric module labels to color labels
+activeModules = labels2colors(as.numeric(activeModuleLabels))
+consModules = labels2colors(as.numeric(consModuleLabels))
+
+# Numbers of female and consensus modules
+nactiveMods = length(activeModules)
+nConsMods = length(consModules)
+
+# Initialize tables of p-values and of the corresponding counts
+pTable = matrix(0, nrow = nactiveMods, ncol = nConsMods);
+CountTbl = matrix(0, nrow = nactiveMods, ncol = nConsMods);
+# Execute all pairwaise comparisons
+for (omod in 1:nactiveMods)
+for (cmod in 1:nConsMods)
+{
+activeMembers = (activeMColors == activeModules[omod]);
+consMembers = (consMColors == consModules[cmod]);
+pTable[omod, cmod] = -log10(fisher.test(activeMembers, consMembers, alternative = "greater")$p.value);
+CountTbl[omod, cmod] = sum(activeMColors == activeModules[omod] & consMColors ==
+consModules[cmod])
+}
+
+# Truncate p values smaller than 10^{-50} to 10^{-50}
+pTable[is.infinite(pTable)] = 1.3*max(pTable[is.finite(pTable)]);
+pTable[pTable>50 ] = 50 ;
+# Marginal counts (really module sizes)
+activeModTotals = apply(CountTbl, 1, sum)
+consModTotals = apply(CountTbl, 2, sum)
+
+# Actual plotting
+sizeGrWindow(10,7 );
+#pdf(file = "Plots/ConsensusVsFemaleModules.pdf", wi = 10, he = 7);
+par(mfrow=c(1,1));
+par(cex = 1.0);
+par(mar=c(8, 10.4, 2.7, 1)+0.3);
+# Use function labeledHeatmap to produce the color-coded table with all the trimmings
+labeledHeatmap(Matrix = pTable,
+xLabels = paste(" ", consModules),
+yLabels = paste(" ", activeModules),
+colorLabels = TRUE,
+xSymbols = paste("Cons ", consModules, ": ", consModTotals, sep=""),
+ySymbols = paste("active ", activeModules, ": ", consModTotals, sep=""),
+textMatrix = CountTbl,
+colors = greenWhiteRed(100)[50:100],
+main = "Correspondence of active set-specific and consensus modules",
+cex.text = 1.0, cex.lab = 1.0, setStdMargins = FALSE);
+
+
+```
+
+```{r broken trait corr pheatmap}
+
+library(pheatmap)
+library(viridis)
+textMatrix<-list()
+
+for (set in 1:nSets){
+
+textMatrix[[set]] = paste(signif(moduleTraitCor[[set]]%>%as.matrix(), 2),
+                   "\n(",
+                   signif(moduleTraitPvalue[[set]]%>%as.matrix(), 1),
+                   ")",
+                   sep = "")
+
+display<-pmap_dfr(moduleTraitPvalue[[set]],~data.frame(min_MatxPat=..1>0.05, min_Allele=..2>0.05, min_Block=..3>0.05))
+
+moduleTraitCor[[set]][display$min_MatxPat==T,1]<-NA
+moduleTraitCor[[set]][display$min_Allele==T,2]<-NA
+moduleTraitCor[[set]][display$min_Block==T,3]<-NA
+
+dim(textMatrix[[set]]) = dim(moduleTraitCor[[set]])
+
+pheatmap(
+  mat=moduleTraitCor[[set]],
+  color=heat.col,
+  cluster_rows = F,
+  cluster_cols = F
+ 
+)
+}
+
+```
+
+```{r relating consensus modules to sample info}
+# Set up variables to contain the module-trait correlations
+
+
+nSets=4
+moduleTraitCor = list();
+moduleTraitPvalue = list();
+# Calculate the correlations
+for (set in 1:nSets)
+{
+moduleTraitCor[[set]] = cor(consMEs[[set]]$data, Traits[[set]]$data, use = "p");
+moduleTraitPvalue[[set]] = corPvalueFisher(moduleTraitCor[[set]], exprSize$nSamples[set]);
+}
+
+# Convert numerical lables to colors for labeling of modules in the plot
+MEColors = labels2colors(as.numeric(substring(names(consMEs[[1]]$data), 3)));
+MEColorNames = paste("ME", MEColors, sep="");
+# Open a suitably sized window (the user should change the window size if necessary)
+sizeGrWindow(10,7)
+#pdf(file = "Plots/ModuleTraitRelationships-female.pdf", wi = 10, he = 7);
+# Plot the module-trait relationship table for set number 1
+set = 1
+textMatrix = paste(signif(moduleTraitCor[[set]], 2), "\n(",
+signif(moduleTraitPvalue[[set]], 1), ")", sep = "");
+dim(textMatrix) = dim(moduleTraitCor[[set]])
+par(mar = c(6, 8.8, 3, 2.2));
+labeledHeatmap(Matrix = moduleTraitCor[[set]],
+xLabels = names(Traits[[set]]$data),
+yLabels = MEColorNames,
+ySymbols = MEColorNames,
+colorLabels = FALSE,
+colors = greenWhiteRed(50),
+textMatrix = textMatrix,
+setStdMargins = FALSE,
+cex.text = 0.5,
+zlim = c(-1,1),
+main = paste("Module--trait relationships in", setLabels[set]))
+dev.off();
+# Plot the module-trait relationship table for set number 2
+set = 2
+textMatrix = paste(signif(moduleTraitCor[[set]], 2), "\n(",
+signif(moduleTraitPvalue[[set]], 1), ")", sep = "");
+dim(textMatrix) = dim(moduleTraitCor[[set]])
+sizeGrWindow(10,7)
+#pdf(file = "Plots/ModuleTraitRelationships-male.pdf", wi = 10, he = 7);
+par(mar = c(6, 8.8, 3, 2.2));
+
+
+
+```
+
+
+```{r WGCNA}
+options(stringsAsFactors = FALSE)
+enableWGCNAThreads()
+
+# We work with four sets:
+nSets = 4;
+
+# For easier labeling of plots, create a vector holding descriptive names of the two sets.
+setLabels = c("active brain", "sterile brain", "active FO", "sterile FO")
+shortLabels = c("ABrain", "SBrain", "AOvary","SOvary")
+# Form multi-set expression data: columns starting from 9 contain actual expression data.
+multiExpr = vector(mode = "list", length = nSets)
+
+
+multiExpr[[1]] = list(data=t(activebrain_shared))
+multiExpr[[2]] = list(data=t(sterilebrain_shared))
+multiExpr[[3]] = list(data=t(activeovaries_shared))
+multiExpr[[4]] = list(data=t(sterileovaries_shared))
+
+for(i in 1:4){
+    multiExpr[[i]]$data<- apply(multiExpr[[i]]$data,2,as.numeric)
+}
+
+names(multiExpr[[1]]$data) <- rownames(activebrain_shared)
+rownames(multiExpr[[1]]$data) = names(active_brain[-1])
+
+names(multiExpr[[2]]$data) <- rownames(sterilebrain_shared)
+rownames(multiExpr[[2]]$data) = names(sterile_brain[-1])
+
+names(multiExpr[[3]]$data) <- rownames(activeovaries_shared)
+rownames(multiExpr[[3]]$data) = names(active_FO[-1])
+
+names(multiExpr[[4]]$data) <- rownames(sterileovaries_shared)
+rownames(multiExpr[[4]]$data) = names(sterile_FO[-1])
+
+
+
+exprSize = checkSets(multiExpr)
+
+
+# Form a multi-set structure that will hold the clinical traits.
+Traits = vector(mode="list", length = nSets);
+for (set in 1:nSets)
+{
+setSamples = rownames(multiExpr[[set]]$data);
+traitRows = match(setSamples, all_doe_bin$Sample);
+Traits[[set]] = list(data = all_doe_bin[traitRows, -1]);
+rownames(Traits[[set]]$data) = all_doe_bin[traitRows, 1];
+}
+
+collectGarbage();
+
+# Choose a set of soft-thresholding powers
+powers = c(seq(4,10,by=1), seq(12,20, by=2));
+# Initialize a list to hold the results of scale-free analysis
+powerTables = vector(mode = "list", length = nSets);
+# Call the network topology analysis function for each set in turn
+for (set in 1:nSets)
+powerTables[[set]] = list(data = pickSoftThreshold(multiExpr[[set]]$data, powerVector=powers,
+verbose = 2)[[2]])
+
+collectGarbage();
+# Plot the results:
+colors = c("black", "red", "blue", "green")
+# Will plot these columns of the returned scale free analysis tables
+plotCols = c(2,5,6,7)
+colNames = c("Scale Free Topology Model Fit", "Mean connectivity", "Median connectivity",
+"Max connectivity");
+# Get the minima and maxima of the plotted points
+ylim = matrix(NA, nrow = 2, ncol = 4);
+for (set in 1:nSets)
+{
+  for (col in 1:length(plotCols))
+  {
+    ylim[1, col] = min(ylim[1, col], powerTables[[set]]$data[, plotCols[col]], na.rm = TRUE);
+    ylim[2, col] = max(ylim[2, col], powerTables[[set]]$data[, plotCols[col]], na.rm = TRUE);
+  }
+}
+# Plot the quantities in the chosen columns vs. the soft thresholding power
+sizeGrWindow(8, 6)
+#pdf(file = "Plots/scaleFreeAnalysis.pdf", wi = 8, he = 6)
+par(mfcol = c(2,2));
+par(mar = c(4.2, 4.2 , 2.2, 0.5))
+cex1 = 0.7;
+for (col in 1:length(plotCols)) for (set in 1:nSets)
+{
+  if (set==1)
+  {
+    plot(powerTables[[set]]$data[,1], -sign(powerTables[[set]]$data[,3])*powerTables[[set]]$data[,2],
+         xlab="Soft Threshold (power)",ylab=colNames[col],type="n", ylim = ylim[, col],
+         main = colNames[col]);
+    addGrid();
+  }
+  if (col==1)
+  {
+    text(powerTables[[set]]$data[,1], -sign(powerTables[[set]]$data[,3])*powerTables[[set]]$data[,2],
+         labels=powers,cex=cex1,col=colors[set]);
+  } else
+    text(powerTables[[set]]$data[,1], powerTables[[set]]$data[,plotCols[col]],
+         labels=powers,cex=cex1,col=colors[set]);
+  if (col==1)
+  {
+    legend("bottomright", legend = setLabels, col = colors, pch = 20) ;
+  } else
+    legend("topright", legend = setLabels, col = colors, pch = 20) ;
+}
+#dev.off();
+
+
+net = blockwiseConsensusModules(
+multiExpr, power = 10, minModuleSize = 30, deepSplit = 2,
+pamRespectsDendro = FALSE,
+ corType="bicor",
+mergeCutHeight = 0.25, numericLabels = TRUE,
+minKMEtoStay = 0,
+saveTOMs = TRUE, verbose = 5,
+networkType = "signed", 
+TOMType = "signed")
+
+consMEs = net$multiMEs
+consMLabels = net$colors;
+# Convert the numeric labels to color labels
+consMColors = labels2colors(consMLabels)
+consTree = net$dendrograms[[1]];
+
+
+plotDendroAndColors(consTree, consMColors,
+"Module colors",
+dendroLabels = FALSE, hang = 0.03,
+addGuide = TRUE, guideHang = 0.05,
+main = "Consensus gene dendrogram and module colors")
+
+```
+
+
+```{r adapting glm}
+
+
+##setup variables
+nSets=4
+moduleTraitCor = list();
+moduleTraitPvalue = list();
+
+
+# Calculate the correlations
+
+for (set in 1:nSets){
+    
+res <- data.frame()
+pvalues<-data.frame()
+ME_names<-colnames(consMEs[[set]]$data)
+
+for (i in ME_names){
+  print(i)
+    trait_i<-Traits[[set]]$data
+  test<-glm(consMEs[[set]]$data[,i]~trait_i$MatxPat+
+                trait_i$Allele+
+                trait_i$Block)
+  test%>%summary()%>%print()
+  ##get coefficients
+  coeff2<-coef(test)[2]
+  coeff3<-coef(test)[3]
+  coeff4<-coef(test)[4]
+  coeff<-data.frame(MatxPat=coeff2,
+                    Allele=coeff3,
+                    Block=coeff4,
+                    row.names = i)
+  ##get pvalues
+  pval2<-coef(summary(test))[2,4]
+  pval3<-coef(summary(test))[3,4]
+  pval4<-coef(summary(test))[4,4]
+  pval<-data.frame(MatxPat=pval2,
+                   Allele=pval3,
+                   Block=pval4, 
+                   row.names = i)
+  pvalues<-rbind(pvalues,pval)
+  res<-rbind(res,coeff)
+  
+
+  }
+moduleTraitCor[[set]]<-res
+moduleTraitPvalue[[set]]<-pvalues
+}
+
+par(mar=c(5.1,4.1,4.1,2.1))
+par(mfrow = c(1, 1))
+heat.col<-viridis(50)
+textMatrix<-list()
+
+for (set in 1:nSets){
+
+textMatrix[[set]] = paste(signif(moduleTraitCor[[set]]%>%as.matrix(), 2),
+                   "\n(",
+                   signif(moduleTraitPvalue[[set]]%>%as.matrix(), 1),
+                   ")",
+                   sep = "")
+#dim(textMatrix) = dim(moduleTraitCor)
+
+display<-pmap_dfr(moduleTraitPvalue[[set]],~data.frame(min_MatxPat=..1>0.05, min_Allele=..2>0.05, min_Block=..3>0.05))
+
+moduleTraitCor[[set]][display$min_MatxPat==T,1]<-NA
+moduleTraitCor[[set]][display$min_Allele==T,2]<-NA
+moduleTraitCor[[set]][display$min_Block==T,3]<-NA
+
+
+dim(textMatrix[[set]]) = dim(moduleTraitCor[[set]])
+par(mar = c(6, 8.8, 3, 2.2));
+labeledHeatmap(Matrix = moduleTraitCor[[set]],
+xLabels = names(moduleTraitCor[[set]]),
+yLabels = rownames(moduleTraitCor[[set]]),
+ySymbols = rownames(moduleTraitCor[[set]]),
+colorLabels = FALSE,
+colors = heat.col,
+textMatrix = textMatrix[[set]],
+setStdMargins = FALSE,
+cex.text = 0.5,
+zlim = c(-1,1),
+main = paste("Module-trait relationships in", setLabels[set]))
+}
+
+
+```
+```{r igraph}
+source("wgcna2igraph.R")
+datExpr<-t(common_brains)
+datExpr<- apply(datExpr,2,as.numeric)
+
+pow=10
+net.1 = blockwiseModules(datExpr, power = pow,
+                         maxBlockSize = 5000, deepSplit = 2,
+                         minModuleSize = 10,
+                         saveTOMs = FALSE,
+                         verbose = T)
+
+ME_names<-colnames(consMEs[[1]]$data)
+
+graph<-wgcna2igraph(net = net, datExpr = multiExpr[[1]],
+                    modules2plot = c(1:4),colors2plot = c(1:4),
+                    kME.threshold = 0.5, 
+                    adjacency.threshold = 0.1,
+                    adj.power = 6, 
+                    verbose = T,
+                    node.size = 0, 
+                    frame.color = NA, 
+                    node.color = NA,
+                    edge.alpha = .5, 
+                    edge.width =1)
+plot(graph)
+multiExpr
+```
