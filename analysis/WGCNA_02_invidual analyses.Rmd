@@ -152,12 +152,12 @@ dds_all_FBO <- DESeqDataSetFromMatrix(
 
 
 ##which genes to keep?
-keep <- rowSums(counts(dds_all)>=40) >= 3 #filter genes present in at least 12 samples with counts at least 40
+keep <- rowSums(counts(dds_all)>=40) >= 12 #filter genes present in at least 12 samples with counts at least 40
 keep_FBO <- rowSums(counts(dds_all_FBO,normalize=F)>=20) >= 3 ###only use this if you want to use different genes in each data set
 
 
 dds_all<-dds_all[keep,]
-dds_all_FBO <- dds_all_FBO[keep_FBO,]
+dds_all_FBO <- dds_all_FBO[keep,]
 dds_all_brain<-dds_all_brain[keep,]
 
 ##various transformations

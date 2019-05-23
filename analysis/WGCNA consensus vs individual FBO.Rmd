@@ -20,8 +20,9 @@ ova_names<-load("data/OvaryModules.RData")
 
 ##module labels 
 #can also convert numeric labels to colors using labels2colors(as.numeric())
-ovaModules = ovaryMLabels
-consModules =consMLabels
+ovaModules = labels2colors(as.numeric(ovaryMLabels))
+
+consModules =labels2colors(as.numeric(consMLabels))
 
 # Numbers of female and consensus modules
 nOvaMods = length(ovaryMLabels)
