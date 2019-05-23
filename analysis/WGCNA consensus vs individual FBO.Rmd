@@ -26,9 +26,9 @@ consModuleLabels = substring(names(consMEs[[1]]$data), 3)
 
 
 #can also convert numeric labels to colors using labels2colors(as.numeric())
-ovaModules = labels2colors(as.numeric(ovaModuleLabels))
+ovaModules = ovaryMLabels
 
-consModules =labels2colors(consMLabels)
+consModules =consMLabels
 
 # Numbers of female and consensus modules
 nOvaMods = length(ovaModuleLabels)
@@ -42,8 +42,8 @@ CountTbl = matrix(0, nrow = nOvaMods, ncol = nConsMods)
 for (omod in 1:nOvaMods)
   for (cmod in 1:nConsMods)
   {
-    ovaMembers = (ovaModules == ovaryMLabels[omod]);
-    consMembers = (consModules == consMLabels[cmod]);
+    ovaMembers = (ovaryMLabels == ovaryMLabels[omod]);
+    consMembers = (consMLabels == consMLabels[cmod]);
     pTable[omod, cmod] = -log10(fisher.test(ovaMembers, consMembers, alternative = "greater")$p.value);
     CountTbl[omod, cmod] = sum(ovaryMLabels == ovaModules[omod] & consMLabels ==
                       consModules[cmod])
@@ -56,7 +56,7 @@ pTable[pTable>50 ] = 50 ;
 ovaModTotals = apply(CountTbl, 1, sum)
 consModTotals = apply(CountTbl, 2, sum)
 # Actual plotting
-sizeGrWindow(20,20 );
+sizeGrWindow(10,7 );
 pdf(file = "../figures/ConsensusVsovaryModules.pdf", wi = 20, he = 20);
 par(mfrow=c(1,1));
 par(cex = 1.0);
@@ -65,9 +65,9 @@ par(mar=c(8, 10.4, 2.7, 1)+0.3);
 labeledHeatmap(Matrix = pTable,
                xLabels = paste(" ", consModuleLabels),
                yLabels = paste(" ", ovaModuleLabels),
-               colorLabels = T,
+               colorLabels = F,
                xSymbols = paste("Cons ", consModuleLabels, ": ", consModTotals, sep=""),
-               ySymbols = paste("Ova ", ovaModuleLabels, ": ", ovaModTotals, sep=""),
+               ySymbols = paste("Fem ", ovaModuleLabels, ": ", ovaModTotals, sep=""),
                textMatrix = CountTbl,
                colors = greenWhiteRed(100)[50:100],
                main = "Correspondence of ovary set-specific and brain-ovary consensus modules",
