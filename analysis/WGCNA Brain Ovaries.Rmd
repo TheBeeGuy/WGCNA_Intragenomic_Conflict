@@ -150,7 +150,7 @@ dds_all_FBO <- DESeqDataSetFromMatrix(
     colData = all_info[all_info$Tissue=="FBO",],
     design = ~ Rep_status+MatxPat+Block)
 
-keep <- rowSums(counts(dds_all)>=10) >= 6 #filter genes present in at least 12 samples with counts at least 10
+keep <- rowSums(counts(dds_all)>=20) >= 6 #filter genes present in at least 12 samples with counts at least 10
 dds_all<-dds_all[keep,]
 dds_all_FBO <- dds_all_FBO[keep,]
 dds_all_brain<-dds_all_brain[keep,]
@@ -618,7 +618,7 @@ module_significant_genes<-cbind(module_significant_genes,genes)
 colnames(module_significant_genes)<-c("background",ME_names)
 module_significant_genes
 write.csv(module_significant_genes, "../output/WGCNA_BvFBO_Sig_Modules_genes_entrez.csv")
-
+module_significant_genes<-read.csv("../output/WGCNA_BvFBO_Sig_Modules_genes_entrez.csv")
 ##Getting Hub Genes
 power=10
 
@@ -635,7 +635,7 @@ Hubgenes_FBO<-chooseTopHubInEachModule(datExpr = multiExpr[[2]]$data, #gene expr
    type = "signed")
 
 Hubgenes_Tissue<-cbind(Hubgenes_brain,Hubgenes_FBO)
-
+write.csv(Hubgenes_Tissue, file="../output/Hubgenes_Tissue.csv")
 
 
 ```

@@ -4,13 +4,14 @@ output: html_document
 ---
 
 ```{r libraries}
-
+library(tidyverse)
+library(WGCNA)
 ```
 
 ```{r}
 ##Load in Data for consensus and ovary modules
-cons_names<-load("../data/ConsensusModules_BvsFBO.RData")
-ova_names<-load("../data/OvaryModules.RData")
+cons_names<-load("data/ConsensusModules_BvsFBO.RData")
+ova_names<-load("data/OvaryModules.RData")
 
 # Labels are ovaryMLabels, consMLabels
 #Colors are ovaryMColors, consMColors
@@ -19,14 +20,28 @@ ova_names<-load("../data/OvaryModules.RData")
 
 ##module labels 
 #can also convert numeric labels to colors using labels2colors(as.numeric())
-ovaModules = femModuleLabels
-consModules =consModuleLabels
+ovaModules = ovaryMLabels
+consModules =consMLabels
 
 # Numbers of female and consensus modules
 nOvaMods = length(ovaryMLabels)
 nConsMods = length(consMLabels)
 
 ## Initialize tables of p-values and of the corresponding counts
-pTable = matrix(0, nrow = nFemMods, ncol = nConsMods);
-CountTbl = matrix(0, nrow = nFemMods, ncol = nConsMods);
+pTable = matrix(0, nrow = nOvaMods, ncol = nConsMods)
+CountTbl = matrix(0, nrow = nOvaMods, ncol = nConsMods)
+
+# Execute all pairwaise comparisons
+for (omod in 1:nOvaMods)
+  for (cmod in 1:nConsMods)
+  {
+    ovaMembers = (ovaryMLabels == ovaModules[omod]);
+    consMembers = (consMLabels == consModules[cmod]);
+    pTable[fmod, cmod] = -log10(fisher.test(ovaMembers, consMembers, alternative = "greater")$p.value);
+    CountTbl[fmod, cmod] = sum(femaleColors == femModules[fmod] & moduleColors ==
+                      consModules[cmod])
+  }
+
+
+
 ```
