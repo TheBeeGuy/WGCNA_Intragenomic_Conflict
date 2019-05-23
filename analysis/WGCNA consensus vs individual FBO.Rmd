@@ -1,0 +1,32 @@
+---
+title: "Comparing individual and consensus"
+output: html_document
+---
+
+```{r libraries}
+
+```
+
+```{r}
+##Load in Data for consensus and ovary modules
+cons_names<-load("../data/ConsensusModules_BvsFBO.RData")
+ova_names<-load("../data/OvaryModules.RData")
+
+# Labels are ovaryMLabels, consMLabels
+#Colors are ovaryMColors, consMColors
+#trees are ovaryTree, consTree
+#MEs are ovaryMEs, consMEs
+
+##module labels 
+#can also convert numeric labels to colors using labels2colors(as.numeric())
+ovaModules = femModuleLabels
+consModules =consModuleLabels
+
+# Numbers of female and consensus modules
+nOvaMods = length(ovaryMLabels)
+nConsMods = length(consMLabels)
+
+## Initialize tables of p-values and of the corresponding counts
+pTable = matrix(0, nrow = nFemMods, ncol = nConsMods);
+CountTbl = matrix(0, nrow = nFemMods, ncol = nConsMods);
+```
