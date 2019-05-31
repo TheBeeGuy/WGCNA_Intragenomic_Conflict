@@ -27,6 +27,8 @@ all_expr<-read.table("../data/all_expr.txt",header=T)%>%as.data.frame()
 
 all_expr_updated<-read.table("../data/exprUpdated.txt",header=T)%>%as.data.frame()
 
+##are these compatible
+all(rownames(all_expr_updated)==all_expr$chrmxfeaturexstartxendxID)
 
 
 #read in sample info
@@ -51,7 +53,7 @@ pDataUpdated<-read.table("../data/pDataUpdated.txt",header=T,row.names = 1)%>%as
 
 ```
 
-```{cleaning allelic exprssion data}
+```{cleaning allelic expression data}
 
 ##preparing sample info for allelic expression
 all(colnames(fbo_trait_binary)==colnames(brain_trait_binary))
@@ -168,16 +170,36 @@ rownames(activebrain_shared)<-
 
 rownames(all_expr)<-all_expr$chrmxfeaturexstartxendxID
 all_expr<-all_expr%>%select(-chrmxfeaturexstartxendxID)
-all(colnames(all_expr)==rownames(all_info))
-all_expr_brain<-all_expr[,all_info$Tissue=="Brain"]
+all(colnames(all_expr)==rownames(all_info))##all genes check out
+
+#subsetting for tissue specific dataset
+#all_expr_brain<-all_expr[,all_info$Tissue=="Brain"]
+all_expr_brain<-all_expr_updated%>%select(rownames(pDataUpdated)) #use this instead
 all_expr_ovary<-all_expr[,all_info$Tissue=="FBO"]
 
 
 
+##updated Brain dataset
 
+pDataUpdated$Tissue<-"Brain"
+pDataUpdated<-pDataUpdated%>%select(-Line)
 ### Preparing all genes sample info
+FBOnames<-rownames(all_info[all_info$Tissue=="FBO",])
 all_info<-all_info%>%select(Rep_status,Block,MatxPat,Tissue)
+all_info_FBO<-all_info%>%filter(Tissue=="FBO")
+rownames(all_info_FBO)<-FBOnames
 
+##merge updated brainsback
+all_info<-rbind(all_info_FBO,pDataUpdated )
+
+##merge updated brain gene list back into the pipe
+all_expr<-cbind(all_expr_ovary,all_expr_brain)%>%select(rownames(all_info))
+
+
+all(colnames(all_expr)==rownames(all_info))
+
+
+#settings levels for factors
 all_info$Rep_status<-factor(all_info$Rep_status,levels = c("Sterile","Reproductive"))
 all_info$Block<-factor(all_info$Block,levels=c("A","B"))
 all_info$MatxPat<-factor(all_info$MatxPat,levels=c("ExA","AxE"))
@@ -190,36 +212,25 @@ rownames(all_expr_ovary)<-rownames(all_expr)
 
 
 
-
-
 all(all_info[all_info$Tissue=="Brain",]$Sample==colnames(all_expr_brain))
 all(all_info[all_info$Tissue=="FBO",]$Sample==colnames(all_expr_ovary))
 
 dds_all<- DESeqDataSetFromMatrix(
-    countData = all_expr,
+    countData = all_expr%>%round(),
     colData = all_info,
     design = ~ Rep_status+MatxPat+Block+Tissue)
 
 
 dds_all_brain<- DESeqDataSetFromMatrix(
-    countData = all_expr_brain,
+    countData = round(all_expr_brain),
     colData = all_info[all_info$Tissue=="Brain",],
     design = ~ Rep_status+MatxPat+Block)
 dds_all_FBO <- DESeqDataSetFromMatrix(
-    countData = all_expr_ovary,
+    countData = round(all_expr_ovary),
     colData = all_info[all_info$Tissue=="FBO",],
     design = ~ Rep_status+MatxPat+Block)
 
 ```
-
-
-```{r rows to keep}
-keep <- rowSums(counts(dds_all)>=40) >= 12#filter genes present in at least 12 samples with counts at least 10
-dds_all<-dds_all[keep,]
-dds_all_FBO <- dds_all_FBO[keep,]
-dds_all_brain<-dds_all_brain[keep,]
-```
-
 
 ```{r transforming data}
 
@@ -231,6 +242,20 @@ vst_all<-vst(dds_all)%>%assay()
 
 
 ```
+
+```{r rows to keep}
+keep <- rowSums(counts(dds_all)>=40) >= 12#filter genes present in at least 12 samples with counts at least 10
+
+keep_FBO <- rowSums(counts(dds_all_FBO,normalize=F)>=20) >= 3 ###only use this if you want to use different genes in each data set
+
+dds_all<-dds_all[keep,]
+dds_all_FBO <- dds_all_FBO[keep,]
+dds_all_brain<-dds_all_brain[keep,]
+
+save(dds_all,dds_all_FBO,dds_all_brain,vst_all_FBO, vst_all,vst_all_brain,all_info,keep, keep_FBO,file = "../data/dds_gene_counts.Rdata")
+```
+
+
 
 ```{r DEG and PSGE overlaps}
 PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
