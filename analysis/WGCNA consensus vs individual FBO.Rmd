@@ -42,11 +42,13 @@ CountTbl = matrix(0, nrow = nOvaMods, ncol = nConsMods)
 for (omod in 1:nOvaMods)
   for (cmod in 1:nConsMods)
   {
+
     ovaMembers = (ovaryMLabels == ovaryMLabels[omod]);
     consMembers = (consMLabels == consMLabels[cmod]);
     pTable[omod, cmod] = -log10(fisher.test(ovaMembers, consMembers, alternative = "greater")$p.value);
     CountTbl[omod, cmod] = sum(ovaryMLabels == ovaModules[omod] & consMLabels ==
                       consModules[cmod])
+
   }
 
 # Truncate p values smaller than 10^{-50} to 10^{-50} 
