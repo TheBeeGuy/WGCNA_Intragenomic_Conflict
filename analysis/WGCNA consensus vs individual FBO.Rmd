@@ -38,9 +38,8 @@ for (omod in 1:nOvaMods)
   {
     ovaMembers = (ovaryMLabels == ovaModules[omod]);
     consMembers = (consMLabels == consModules[cmod]);
-    pTable[fmod, cmod] = -log10(fisher.test(ovaMembers, consMembers, alternative = "greater")$p.value);
-    CountTbl[fmod, cmod] = sum(femaleColors == femModules[fmod] & moduleColors ==
-                      consModules[cmod])
+    pTable[omod, cmod] = -log10(fisher.test(ovaMembers, consMembers, alternative = "greater")$p.value);
+    CountTbl[omod, cmod] = sum(ovaryMColors == ovaModules[omod] & moduleColors ==consModules[cmod])
   }
 
 
