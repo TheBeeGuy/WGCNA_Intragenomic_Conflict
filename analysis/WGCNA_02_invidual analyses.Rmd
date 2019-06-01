@@ -16,7 +16,7 @@ library(RColorBrewer)
 
 #Load in Data from WGCNA Brain Ovaries file
 ```{r}
-load("data/dds_gene_counts.Rdata")
+load("../data/dds_gene_counts.Rdata")
 
 ```
 
@@ -161,6 +161,87 @@ dev.off()
 
 
 ```
+
+
+```{r WGCNA brain}
+options(stringAsFactors = FALSE)
+enableWGCNAThreads()
+
+# We work with two sets:
+nSets = 1;
+
+# For easier labeling of plots, create a vector holding descriptive names of the two sets.
+setLabels = c( "Brain")
+shortLabels = c("B")
+# Form multi-set expression data: columns starting from 9 contain actual expression data.
+brainExpr = vector(mode = "list", length = nSets)
+
+###use ntd_brain, vst_brain,  rlog_brain, or common_brains
+##use ntd_FBO, vst_FBO, rlog_FBO, or common_ovaries
+
+
+
+brainExpr[[1]] = list(data=t(vst_all_brain))
+
+for(i in 1:nSets){
+    brainExpr[[i]]$data<- apply(brainExpr[[i]]$data,2,as.numeric)
+}
+
+names(brainExpr[[1]]$data) <- rownames(vst_all_brain)
+rownames(brainExpr[[1]]$data) <- colnames(vst_all_brain)
+
+
+
+exprSize = checkSets(brainExpr)
+
+
+# Form a multi-set structure that will hold the clinical traits.
+brain_Traits = vector(mode="list", length = nSets);
+for (set in 1:nSets)
+{
+setSamples = rownames(brainExpr[[set]]$data);
+traitRows = match(setSamples, rownames(all_info));
+brain_Traits[[set]] = list(data = all_info[traitRows, ]);
+rownames(brain_Traits[[set]]$data) =rownames(all_info[traitRows, ]);
+}
+
+collectGarbage();
+
+net_brain = blockwiseConsensusModules(
+brainExpr, power = 10, minModuleSize = 30, deepSplit = 2,
+pamRespectsDendro = FALSE,
+ corType="bicor",
+mergeCutHeight = 0.25, numericLabels = TRUE,
+minKMEtoStay = 0,nThreads = 3,
+saveIndividualTOMs = T, saveConsensusTOMs = T, verbose = 5,
+networkType = "signed", maxBlockSize = 14086,
+TOMType = "signed")#can set block size to 15K for single analysis
+
+brainMEs = net_brain$multiMEs
+brainMLabels =net_brain$colors;
+# Convert the numeric labels to color labels
+brainMColors = labels2colors(brainMLabels)
+brainTree = net_brain$dendrograms[[1]];
+
+
+#consensus modules and colors
+pdf(file = "../figures/Ovary Dendrogram w colors.pdf",width = 8, height = 6)
+plotDendroAndColors(brainTree, brainMColors[net_brain$goodGenes],"Module colors",
+dendroLabels = FALSE, hang = 0.03,
+addGuide = FALSE, guideHang = 0.05,
+main = "Brain gene dendrogram and module colors")
+dev.off()
+
+
+ save(brainMEs, brainMLabels,brainMColors,brainTree,net_ovaries,brain_Traits,brainExpr,setLabels,shortLabels, file = "../data/BrainModules.RData")
+# load("../data/OvaryModules.RData")
+ 
+
+
+
+```
+
+
 
 
 

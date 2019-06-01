@@ -53,6 +53,15 @@ pDataUpdated<-read.table("../data/pDataUpdated.txt",header=T,row.names = 1)%>%as
 
 ```
 
+
+```{r data DEG and PSGE overlaps}
+PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
+PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
+DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
+
+```
+
+
 ```{cleaning allelic expression data}
 
 ##preparing sample info for allelic expression
@@ -74,14 +83,6 @@ all_doe$TissuexRep<- factor(paste0(all_doe$Tissue, all_doe$Rep_status), levels=c
 
 ```
 
-```{r unused}
-info_brain<-all_info%>%filter(Tissue=="Brain")%>%select(-Tissue)
-info_ovary<-all_info%>%filter(Tissue=="FBO")%>%select(-Tissue)
-pData_FBO<-read.table("../data/pData_FBO.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
-
-
-
-```
 
 ```{r active brains and ovaries ASE}
 
@@ -251,18 +252,15 @@ keep_FBO <- rowSums(counts(dds_all_FBO,normalize=F)>=20) >= 3 ###only use this i
 dds_all<-dds_all[keep,]
 dds_all_FBO <- dds_all_FBO[keep,]
 dds_all_brain<-dds_all_brain[keep,]
+```
+
+```{r save data}
 
 save(dds_all,dds_all_FBO,dds_all_brain,vst_all_FBO, vst_all,vst_all_brain,all_info,keep, keep_FBO,file = "../data/dds_gene_counts.Rdata")
 ```
 
 
 
-```{r DEG and PSGE overlaps}
-PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
-PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
-DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
-
-```
 
 ```{r WGCNA ovary brain combined}
 options(stringAsFactors = FALSE)
@@ -310,6 +308,10 @@ rownames(Traits[[set]]$data) =rownames(all_info[traitRows, ]);
 }
 
 collectGarbage();
+```
+
+```{r choose soft threshold}
+
 set.seed(10)
 # Choose a set of soft-thresholding powers
 powers = c(seq(4,10,by=1), seq(12,20, by=2));
@@ -366,8 +368,10 @@ for (col in 1:length(plotCols)) for (set in 1:nSets)
     legend("topright", legend = setLabels, col = colors, pch = 20) ;
 }
 dev.off()
+```
 
 
+```{r construct modules}
 net = blockwiseConsensusModules(
 multiExpr, power = 10, minModuleSize = 30, deepSplit = 2,
 pamRespectsDendro = FALSE,
