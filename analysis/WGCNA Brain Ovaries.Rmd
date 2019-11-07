@@ -62,7 +62,7 @@ DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>
 ```
 
 
-```{cleaning allelic expression data}
+```{r cleaning allelic expression data}
 
 ##preparing sample info for allelic expression
 all(colnames(fbo_trait_binary)==colnames(brain_trait_binary))

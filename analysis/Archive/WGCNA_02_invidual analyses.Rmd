@@ -27,19 +27,6 @@ DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>
 
 ```
 
-```{r}
-active_brain<-read.csv("../data/Brain_Imprinting_ASE_Rep_Overlap.csv",header=T)
-sterile_brain<-read.csv("../data/Brain_Imprinting_ASE_Str_Overlap.csv",header=T)
-
-
-# #Old
-# #these each have 3.5 K genes and 25 samples
-# 
-# active_brain<-read.table("../data/activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
-# sterile_brain<-read.table("../data/sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
-
-```
-
 ```{r WGCNA ovary}
 options(stringAsFactors = FALSE)
 enableWGCNAThreads()
@@ -239,7 +226,6 @@ brainTree = net_brain$dendrograms[[1]];
 
 #consensus modules and colors
 pdf(file = "../figures/Brain Dendrogram w colors.pdf",width = 8, height = 6)
-
 plotDendroAndColors(brainTree, brainMColors[net_brain$goodGenes],"Module colors",
 dendroLabels = FALSE, hang = 0.03,
 addGuide = FALSE, guideHang = 0.05,
@@ -566,8 +552,8 @@ write.csv(module_brain_significant_genes, "../output/WGCNA_brainspecific_Sig_Mod
 ##Getting Hub Genes
 power=10
 
-Hubgenes_FBO<-chooseTopHubInEachModule(datExpr = brainExpr[[1]]$data, #gene expression data, rows =samples; columns =genes  
-   colorh=brainMColors, #module assignments for all rows  
+Hubgenes_FBO<-chooseTopHubInEachModule(datExpr = ovaryExpr[[1]]$data, #gene expression data, rows =samples; columns =genes  
+   colorh=ovaryMColors, #module assignments for all rows  
    omitColors = "grey", 
    power = power, 
    type = "signed")
@@ -581,33 +567,7 @@ overlaps_DEG_background<-intersect(DEG_reproductive$ID,all_mod_genes)
 DEG_reproductive<-DEG_reproductive$ID
 ```
 
-
-```{r DEGs for brain}
-source("../code/get_significant_genes_function.R")
-
-##do the differential expression
-DEG_brain<-DESeq(dds_all_brain)
-
-##extract results
-results_rep_status<-results(DEG_brain, contrast =c("Rep_status","Sterile","Reproductive"),alpha = 0.05)
-
-results_matxpat<-results(DEG_brain, contrast =c("MatxPat","ExA","AxE"),alpha = 0.05)
-
-results_block<-results(DEG_brain, contrast =c("Block","A","B"),alpha = 0.05)
-
-#display results summaries
-results_rep_status%>%summary()
-results_matxpat%>%summary()
-results_block%>%summary()
-
-#extract the gene names
-results_rep_status%>%get_sig_genes()->rep_stat_idx
-results_matxpat%>%get_sig_genes()->matxpat_idx
-results_block%>%get_sig_genes()->block_idx
-```
-
-
-```{r brain overlaps DMLs}
+```{r overlaps DMLs}
 #read in DMLS and get gene lists immediately
 active_parentDML<-read.csv(file = "../DMLgene_lists_05-01-19/rep_parent_DMLgenes.csv")%>%select(V9)
 active_strainDML<-read.csv(file = "../DMLgene_lists_05-01-19/rep_strain_DMLgenes.csv")%>%select(V9)
@@ -748,6 +708,8 @@ write.csv(module_DEG_DML_PSGE_results,"../output/ovary_module_DEG_DML_PSGE_overl
 
 ```
 
+
+
 ```{r keggs for module genes}
 source("../code/find_kegg.R")
 
@@ -792,5 +754,4 @@ nodeNames = modProbes,
 altNodeNames = modGenes,
 nodeAttr = net$colors[goodgenes][inModule]);
 ```
-
 
