@@ -4,7 +4,7 @@ output: html_notebook
 editor_options: 
   chunk_output_type: inline
 ---
-```{r packages, message=FALSE, warning=FALSE}
+```{r packages, message=FALSE, warning=FALSE, verbose=FALSE}
 library(data.table)
 library(tidyverse)
 library(WGCNA)
@@ -24,6 +24,7 @@ load("../data/dds_gene_counts.Rdata")
 PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
 PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
 DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
+DEG_brain<-read.csv('../data/DEG_brain_reproductive_status.csv')%>%select("ID")
 
 ```
 
@@ -536,8 +537,8 @@ write.csv(module_ovary_significant_genes, "../output/WGCNA_ovaryspecific_Sig_Mod
 power=10
 
 Hubgenes_FBO<-chooseTopHubInEachModule(datExpr = ovaryExpr[[1]]$data, #gene expression data, rows =samples; columns =genes  
-   colorh=ovaryMColors, #module assignments for all rows  
-   omitColors = "grey", 
+   colorh=ovaryMLabels, #module assignments for all rows  
+   omitColors = "0", 
    power = power, 
    type = "signed")
 
@@ -579,8 +580,8 @@ write.csv(module_brain_significant_genes, "../output/WGCNA_brainspecific_Sig_Mod
 power=10
 
 Hubgenes_BRAIN<-chooseTopHubInEachModule(datExpr = brainExpr[[1]]$data, #gene expression data, rows =samples; columns =genes  
-   colorh=brainMColors, #module assignments for all rows  
-   omitColors = "grey", 
+   colorh=brainMLabels, #module assignments for all rows  
+   omitColors = "0", 
    power = power, 
    type = "signed")
 
@@ -589,34 +590,10 @@ Hubgenes_BRAIN<-chooseTopHubInEachModule(datExpr = brainExpr[[1]]$data, #gene ex
 
 ```{r DEG sanity check gene lists}
 all_mod_genes<-ovaryExpr[[1]]$data%>%colnames()
-overlaps_DEG_background<-intersect(DEG_reproductive$ID,all_mod_genes)
-DEG_reproductive<-DEG_reproductive$ID
+overlaps_DEG_background<-intersect(DEG_reproductive,all_mod_genes)
 ```
 
 
-```{r DEGs for brain}
-source("../code/get_significant_genes_function.R")
-
-##do the differential expression
-DEG_brain<-DESeq(dds_all_brain)
-
-##extract results
-results_rep_status<-results(DEG_brain, contrast =c("Rep_status","Sterile","Reproductive"),alpha = 0.05)
-
-results_matxpat<-results(DEG_brain, contrast =c("MatxPat","ExA","AxE"),alpha = 0.05)
-
-results_block<-results(DEG_brain, contrast =c("Block","A","B"),alpha = 0.05)
-
-#display results summaries
-results_rep_status%>%summary()
-results_matxpat%>%summary()
-results_block%>%summary()
-
-#extract the gene names
-results_rep_status%>%get_sig_genes()->rep_stat_idx
-results_matxpat%>%get_sig_genes()->matxpat_idx
-results_block%>%get_sig_genes()->block_idx
-```
 
 
 ```{r define overlap functions}
@@ -652,6 +629,9 @@ active_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=activeASE$ID
 sterile_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterileASE$ID)
 
 DEG_reproductive_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_reproductive)
+
+
+DEG_brain_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_brain)
 
 #length of genes
 sterile_PSGE_length<-sterileASE$ID%>%unique_length()##length active psge
@@ -704,7 +684,7 @@ background<-12836
 
 
 #read in beebase ids
-mod_sig_beebase<-read.csv("../output/WGCNA_ovaryspecific_Sig_Modules_genes_entrez.csv")%>%select(-X)
+mod_sig_beebase<-read.csv("../output/WGCNA_brainspecific_Sig_Modules_genes_entrez.csv")%>%select(-X)
 
 #name of modules
 module_name<-mod_sig_beebase%>%colnames()
@@ -759,7 +739,7 @@ colnames(ovary_pvalues)<-c("reproductive_pvalue", "module_name", "ovary_correlat
 moduleDEG_PSGE_genes_results<-left_join(moduleDEG_PSGE_genes_results, brain_pvalues)
 
 
-write.csv(moduleDEG_PSGE_genes_results,"../output/brain_moduleDEG_PSGE_overlap_results.csv")
+write.csv(moduleDEG_PSGE_genes_results,"../output/ovary_moduleDEG_PSGE_overlap_results.csv")
 
 
 ##looking at specific modules

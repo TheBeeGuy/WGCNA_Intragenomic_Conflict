@@ -1,0 +1,368 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+```{r}
+library(tidyverse)
+library(pheatmap)
+library(RColorBrewer)
+
+```
+
+```{r simplified figure}
+ovary_overlaps<-read.csv(file = "../output/ovary_moduleDEG_PSGE_overlap_results.csv", header=T)%>%select(-X)
+
+
+PSGE_pvalues<-ovary_overlaps%>%select(module_name,activePSGE_repstat_pvalue,sterilePSGE_repstat_pvalue)
+
+
+module_name<-ovary_overlaps$module_name
+min_PSGE<-pmap_dfr(PSGE_pvalues,~data.frame(min_PSGE=min(..2,..3)))
+min_DEG<-ovary_overlaps$DEG_repstat_pvalue
+
+min_pvalues<-data.frame(min_PSGE,min_DEG,module_name)
+
+min_pvalues<-cbind(min_pvalues,pmap_dfr(min_pvalues, ~data.frame(min=min(..1,..2))))
+
+
+min_pvalues<-min_pvalues%>%filter(min_pvalues$min<0.05)%>%filter(module_name!="background")
+
+display<-pmap_dfr(min_pvalues,~data.frame(significant_psge=..1>0.05, significant_DEG=..2>0.05))
+
+min_pvalues[display$significant_psge==T,1]<-NA
+min_pvalues[display$significant_DEG==T,2]<-NA
+
+
+min_pvalues$na_count<-apply(min_pvalues,1,function(x) sum(is.na(x)))
+min_pvalues<-min_pvalues%>%group_by(na_count)%>%arrange(na_count)%>%arrange(module_name,.by_group=T)
+
+final_dataset<-data.frame(min_pvalues[,1:2])
+rownames(final_dataset)<-min_pvalues$module_name
+colnames(final_dataset)<-c("PSG","DEG")
+
+pal<- brewer.pal(6,"Blues") #or "BrBG"
+
+cols <- c(colorRampPalette(c(pal[5], pal[1]))(20))
+
+library(grid)
+## For pheatmap_1.0.8 and later:
+draw_colnames_180 <- function (coln, gaps, ...) {
+    coord = pheatmap:::find_coordinates(length(coln), gaps)
+    x = coord$coord - 0.5 * coord$size
+    res = textGrob(coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"), vjust = 1, hjust = 0.5, rot = 360, gp = gpar(...))
+    return(res)}
+
+## 'Overwrite' default draw_colnames with your own version 
+assignInNamespace(x="draw_colnames", value="draw_colnames_180",
+ns=asNamespace("pheatmap"))
+
+
+
+
+pdf(file = "../figures/ovary_module_geneslist_overlap.pdf", wi = 4, he = 6)
+pheatmap(final_dataset, 
+         cluster_rows = F, 
+         cluster_cols = F,
+         show_rownames =T,
+         fontsize =14,
+         color = cols
+        )
+dev.off()
+
+```
+
+
+```{r each row separated figure}
+
+
+
+pvalues<-data.frame(PSGE_pvalues%>%select(-module_name),
+                    ovary_overlaps%>%select(DEG_repstat_pvalue,
+                    reproductive_pvalue),
+                    module_name)%>%filter(
+                        module_name!="background")
+
+
+pvalues$min_pvalues<-apply(pvalues%>%select(-module_name),1, function(x) min(x))
+pvalues<-pvalues%>%filter(pvalues$min_pvalues<0.05)
+pvalues[pvalues>0.05]<-NA
+pvalues$na_count<-apply(pvalues,1,function(x) sum(is.na(x)))
+
+
+pvalues<-pvalues%>%group_by(na_count)%>%arrange(na_count)%>%as.data.frame()
+display_modules<-pvalues$module_name
+
+
+pvalues<-pvalues%>%select(-module_name, -na_count, -min_pvalues)
+
+
+rownames(pvalues)<-display_modules
+colnames(pvalues)<-c("activePSGE","sterilePSGE", "DEGs", "OvaryActivity")
+
+active<-pvalues%>%select("activePSGE","DEGs","OvaryActivity")
+
+sterile<-pvalues%>%select("sterilePSGE", "DEGs", "OvaryActivity")
+
+
+active_sterile<-pvalues%>%select("activePSGE","sterilePSGE","DEGs", "OvaryActivity")
+
+
+###
+
+
+Lists<-c('PSGE','PSGE', "DEGs", "Ovary")
+OvaryStatus<-c('Active','Sterile', "NA", "NA")
+
+a_s_annotations<-cbind(Lists,OvaryStatus)%>%as.data.frame()
+
+rownames(a_s_annotations)<-colnames(active_sterile)
+##plotting
+pal<- brewer.pal(6,"Blues") #or "BrBG"
+
+cols <- c(colorRampPalette(c(pal[5], pal[1]))(20))
+
+library(grid)
+## For pheatmap_1.0.8 and later:
+draw_colnames_180 <- function (coln, gaps, ...) {
+    coord = pheatmap:::find_coordinates(length(coln), gaps)
+    x = coord$coord - 0.5 * coord$size
+    res = textGrob(coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"), vjust = 1, hjust = 0, rot = 315, gp = gpar(...))
+    return(res)}
+
+## 'Overwrite' default draw_colnames with your own version 
+assignInNamespace(x="draw_colnames", value="draw_colnames_180",
+ns=asNamespace("pheatmap"))
+
+
+
+#all columns
+pdf(file = "../figures/ovary_module_geneslist_overlap_separate.pdf", wi = 4, he = 6)
+pheatmap(pvalues, 
+         cluster_rows = F, 
+         cluster_cols = F,
+         show_rownames =T,
+         fontsize =14,
+         color = cols,
+         title = 'Ovary Overlaps with PSGE and DEG'
+        )
+dev.off()
+
+# #active figure
+# pdf(file = "../figures/ovary_module_geneslist_overlap_active.pdf", wi = 4, he = 6)
+# 
+# pheatmap(active, 
+#          cluster_rows = F, 
+#          cluster_cols = F,
+#          show_rownames =T,
+#          fontsize =14,
+#          color = cols
+#         )
+# 
+# dev.off()
+# ##sterile figure
+# 
+# pdf(file = "../figures/ovary_module_geneslist_overlap_sterile.pdf", wi = 4, he = 6)
+# pheatmap(sterile, 
+#          cluster_rows = F, 
+#          cluster_cols = F,
+#          show_rownames =T,
+#          fontsize =14,
+#          color = cols
+#         )
+# dev.off()
+
+##rearrange columns
+# pdf(file = "../figures/ovary_module_geneslist_overlap_allwithgaps.pdf", wi = 4, he = 6)
+# 
+# pheatmap(active_sterile, 
+#          cluster_rows = F, 
+#          cluster_cols = F,
+#          show_rownames =T,
+#          annotation_col = a_s_annotations,
+#          fontsize =14,
+#          gaps_col =c(3,6,7), 
+#          color = cols
+#         )
+# dev.off()
+
+```
+
+```{r brain figures}
+brain_overlaps<-read.csv(file = "../output/ovary_moduleDEG_PSGE_overlap_results.csv", header=T)%>%select(-X)
+
+
+PSGE_pvalues<-brain_overlaps%>%select(module_name,activePSGE_repstat_pvalue,sterilePSGE_repstat_pvalue)
+
+
+module_name<-brain_overlaps$module_name
+min_PSGE<-pmap_dfr(PSGE_pvalues,~data.frame(min_PSGE=min(..2,..3)))
+min_DEG<-brain_overlaps$DEG_repstat_pvalue
+
+min_pvalues<-data.frame(min_PSGE,min_DEG,module_name)
+
+min_pvalues<-cbind(min_pvalues,pmap_dfr(min_pvalues, ~data.frame(min=min(..1,..2))))
+
+
+min_pvalues<-min_pvalues%>%filter(min_pvalues$min<0.05)%>%filter(module_name!="background")
+
+display<-pmap_dfr(min_pvalues,~data.frame(significant_psge=..1>0.05, significant_DEG=..2>0.05))
+
+min_pvalues[display$significant_psge==T,1]<-NA
+min_pvalues[display$significant_DEG==T,2]<-NA
+
+
+min_pvalues$na_count<-apply(min_pvalues,1,function(x) sum(is.na(x)))
+min_pvalues<-min_pvalues%>%group_by(na_count)%>%arrange(na_count)%>%arrange(module_name,.by_group=T)
+
+final_dataset<-data.frame(min_pvalues[,1:2])
+rownames(final_dataset)<-min_pvalues$module_name
+colnames(final_dataset)<-c("PSG","DEG")
+
+pal<- brewer.pal(6,"Blues") #or "BrBG"
+
+cols <- c(colorRampPalette(c(pal[5], pal[1]))(20))
+
+library(grid)
+## For pheatmap_1.0.8 and later:
+draw_colnames_180 <- function (coln, gaps, ...) {
+    coord = pheatmap:::find_coordinates(length(coln), gaps)
+    x = coord$coord - 0.5 * coord$size
+    res = textGrob(coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"), vjust = 1, hjust = 0.5, rot = 360, gp = gpar(...))
+    return(res)}
+
+## 'Overwrite' default draw_colnames with your own version 
+assignInNamespace(x="draw_colnames", value="draw_colnames_180",
+ns=asNamespace("pheatmap"))
+
+
+
+
+pdf(file = "../figures/brain_module_geneslist_overlap.pdf", wi = 4, he = 6)
+pheatmap(final_dataset, 
+         cluster_rows = F, 
+         cluster_cols = F,
+         show_rownames =T,
+         fontsize =14,
+         color = cols,
+         title= "Ovary Overlaps"
+        )
+dev.off()
+
+```
+
+
+```{r brain row separated figure}
+
+
+
+pvalues<-data.frame(PSGE_pvalues%>%select(-module_name),
+                    brain_overlaps%>%select(DEG_repstat_pvalue,
+                    reproductive_pvalue),
+                    module_name)%>%filter(
+                        module_name!="background")
+
+
+pvalues$min_pvalues<-apply(pvalues%>%select(-module_name),1, function(x) min(x))
+pvalues<-pvalues%>%filter(pvalues$min_pvalues<0.05)
+pvalues[pvalues>0.05]<-NA
+pvalues$na_count<-apply(pvalues,1,function(x) sum(is.na(x)))
+
+
+pvalues<-pvalues%>%group_by(na_count)%>%arrange(na_count)%>%as.data.frame()
+display_modules<-pvalues$module_name
+
+
+pvalues<-pvalues%>%select(-module_name, -na_count, -min_pvalues)
+
+
+rownames(pvalues)<-display_modules
+colnames(pvalues)<-c("activePSGE","sterilePSGE", "DEGs", "OvaryActivity")
+
+active<-pvalues%>%select("activePSGE","DEGs","OvaryActivity")
+
+sterile<-pvalues%>%select("sterilePSGE", "DEGs", "OvaryActivity")
+
+
+active_sterile<-pvalues%>%select("activePSGE","sterilePSGE","DEGs", "OvaryActivity")
+
+
+###
+
+
+Lists<-c('PSGE','PSGE', "DEGs", "Ovary")
+OvaryStatus<-c('Active','Sterile', "NA", "NA")
+
+a_s_annotations<-cbind(Lists,OvaryStatus)%>%as.data.frame()
+
+rownames(a_s_annotations)<-colnames(active_sterile)
+##plotting
+pal<- brewer.pal(6,"Blues") #or "BrBG"
+
+cols <- c(colorRampPalette(c(pal[5], pal[1]))(20))
+
+library(grid)
+## For pheatmap_1.0.8 and later:
+draw_colnames_180 <- function (coln, gaps, ...) {
+    coord = pheatmap:::find_coordinates(length(coln), gaps)
+    x = coord$coord - 0.5 * coord$size
+    res = textGrob(coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"), vjust = 1, hjust = 0, rot = 315, gp = gpar(...))
+    return(res)}
+
+## 'Overwrite' default draw_colnames with your own version 
+assignInNamespace(x="draw_colnames", value="draw_colnames_180",
+ns=asNamespace("pheatmap"))
+
+
+
+#all columns
+pdf(file = "../figures/brain_module_geneslist_overlap_separate.pdf", wi = 4, he = 6)
+pheatmap(pvalues, 
+         cluster_rows = F, 
+         cluster_cols = F,
+         show_rownames =T,
+         fontsize =14,
+         color = cols
+        )
+dev.off()
+
+# #active figure
+# pdf(file = "../figures/brain_module_geneslist_overlap_active.pdf", wi = 4, he = 6)
+# 
+# pheatmap(active, 
+#          cluster_rows = F, 
+#          cluster_cols = F,
+#          show_rownames =T,
+#          fontsize =14,
+#          color = cols
+#         )
+# 
+# dev.off()
+# ##sterile figure
+# 
+# pdf(file = "../figures/brain_module_geneslist_overlap_sterile.pdf", wi = 4, he = 6)
+# pheatmap(sterile, 
+#          cluster_rows = F, 
+#          cluster_cols = F,
+#          show_rownames =T,
+#          fontsize =14,
+#          color = cols
+#         )
+# dev.off()
+
+##rearrange columns
+# pdf(file = "../figures/brain_module_geneslist_overlap_allwithgaps.pdf", wi = 4, he = 6)
+# 
+# pheatmap(active_sterile, 
+#          cluster_rows = F, 
+#          cluster_cols = F,
+#          show_rownames =T,
+#          annotation_col = a_s_annotations,
+#          fontsize =14,
+#          gaps_col =c(3,6,7), 
+#          color = cols
+#         )
+# dev.off()
+
+```
