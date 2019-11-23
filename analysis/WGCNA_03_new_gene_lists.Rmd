@@ -590,7 +590,7 @@ Hubgenes_BRAIN<-chooseTopHubInEachModule(datExpr = brainExpr[[1]]$data, #gene ex
 
 ```{r DEG sanity check gene lists}
 all_mod_genes<-ovaryExpr[[1]]$data%>%colnames()
-overlaps_DEG_background<-intersect(DEG_reproductive,all_mod_genes)
+overlaps_DEG_background<-intersect(DEG_reproductive$ID,all_mod_genes)
 ```
 
 
@@ -603,12 +603,11 @@ m_intersect <- function(var1,var2){intersect(var1,var2)%>%unique()%>%length()}
 #get number of unique genes
 unique_length<-function(x){length(unique(x))}
 
+background<-15313
 
 ```
 
 ```{r brain overlaps ASEs}
-
-background<-12836
 
 
 #read in beebase ids
@@ -628,15 +627,17 @@ active_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=activeASE$ID
 
 sterile_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterileASE$ID)
 
-DEG_reproductive_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_reproductive)
+DEG_reproductive_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_reproductive$ID)
 
 
-DEG_brain_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_brain)
+DEG_brain_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_brain$ID)
 
 #length of genes
 sterile_PSGE_length<-sterileASE$ID%>%unique_length()##length active psge
 active_PSGE_length<-activeASE$ID%>%unique_length()#length sterile psge
-DEG_length<-DEG_reproductive%>%unique_length()#length deg
+DEG_rep_length<-DEG_reproductive$ID%>%unique_length()#length deg
+
+DEG_brain_length<-DEG_brain$ID%>%unique_length()#length deg
 
 #Sterlie psge oerlaps
 sterilePSGE_repstat_pvalue<-c()
@@ -653,10 +654,22 @@ activePSGE_repstat_pvalue[mod]<-1-phyper(active_PSGE_module_overlap[mod], active
 #DEG_opverlaps
 DEG_repstat_pvalue<-c()
 for(mod in 1:length(module_name)){
-DEG_repstat_pvalue[mod]<-1-phyper(DEG_reproductive_module_overlap[mod], DEG_length, background-DEG_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+DEG_repstat_pvalue[mod]<-1-phyper(DEG_reproductive_module_overlap[mod], DEG_rep_length, background-DEG_rep_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
 }
 
-moduleDEG_PSGE_genes_results<-cbind(module_name,module_size,active_PSGE_module_overlap,sterile_PSGE_module_overlap,DEG_reproductive_module_overlap,activePSGE_repstat_pvalue,sterilePSGE_repstat_pvalue,DEG_repstat_pvalue)%>%as.data.frame()
+DEG_brain_pvalue<-c()
+for(mod in 1:length(module_name)){
+DEG_brain_pvalue[mod]<-1-phyper(DEG_brain_module_overlap[mod], DEG_brain_length, background-DEG_brain_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+}
+
+brain_moduleDEG_PSGE_genes_results<-cbind(module_name,
+                                          module_size,
+                                          active_PSGE_module_overlap,
+                                          sterile_PSGE_module_overlap,
+                                          DEG_brain_module_overlap,
+                                          activePSGE_repstat_pvalue,
+                                          sterilePSGE_repstat_pvalue,
+                                          DEG_brain_pvalue)%>%as.data.frame()
 
 
 
@@ -667,10 +680,10 @@ brain_pvalues$ovary_correlation<-moduleTraitCor_brain[[1]]$Rep_status
 colnames(brain_pvalues)<-c("reproductive_pvalue", "module_name", "ovary_correlation")
 
 ##combining_everything
-moduleDEG_PSGE_genes_results<-left_join(moduleDEG_PSGE_genes_results, brain_pvalues)
+brain_moduleDEG_PSGE_genes_results<-left_join(brain_moduleDEG_PSGE_genes_results, brain_pvalues)
 
 
-write.csv(moduleDEG_PSGE_genes_results,"../output/brain_moduleDEG_PSGE_overlap_results.csv")
+write.csv(brain_moduleDEG_PSGE_genes_results,"../output/brain_moduleDEG_PSGE_overlap_results.csv")
 
 
 ##looking at specific modules
@@ -678,34 +691,33 @@ write.csv(moduleDEG_PSGE_genes_results,"../output/brain_moduleDEG_PSGE_overlap_r
 # sterile_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_sterile )
 
 ```
-```{r ovary overlaps ASEs}
 
-background<-12836
+```{r ovary overlaps ASEs}
 
 
 #read in beebase ids
-mod_sig_beebase<-read.csv("../output/WGCNA_brainspecific_Sig_Modules_genes_entrez.csv")%>%select(-X)
+mod_sig_fbo_beebase<-read.csv("../output/WGCNA_ovaryspecific_Sig_Modules_genes_entrez.csv")%>%select(-X)
 
 #name of modules
-module_name<-mod_sig_beebase%>%colnames()
+module_name<-mod_sig_fbo_beebase%>%colnames()
 
 
 #get size of each module
-module_size<-apply(X = mod_sig_beebase,2, FUN = unique_length)
+module_size<-apply(X = mod_sig_fbo_beebase,2, FUN = unique_length)
 
 #Hypergeometric tests for active genes
 
 ##get overlaps for DEGs
-active_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=PSGE_active$ID)
+active_PSGE_module_overlap<-sapply(mod_sig_fbo_beebase,m_intersect,var2=PSGE_active$ID)
 
-sterile_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=PSGE_sterile$ID)
+sterile_PSGE_module_overlap<-sapply(mod_sig_fbo_beebase,m_intersect,var2=PSGE_sterile$ID)
 
-DEG_reproductive_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_reproductive)
+DEG_reproductive_module_overlap<-sapply(mod_sig_fbo_beebase,m_intersect,var2=DEG_reproductive)
 
 #length of genes
 sterile_PSGE_length<-PSGE_sterile$ID%>%unique_length()##length active psge
 active_PSGE_length<-PSGE_active$ID%>%unique_length()#length sterile psge
-DEG_length<-DEG_reproductive%>%unique_length()#length deg
+DEG_rep_length<-DEG_reproductive$ID%>%unique_length()#length deg
 
 #Sterlie psge oerlaps
 sterilePSGE_repstat_pvalue<-c()
@@ -722,10 +734,16 @@ activePSGE_repstat_pvalue[mod]<-1-phyper(active_PSGE_module_overlap[mod], active
 #DEG_opverlaps
 DEG_repstat_pvalue<-c()
 for(mod in 1:length(module_name)){
-DEG_repstat_pvalue[mod]<-1-phyper(DEG_reproductive_module_overlap[mod], DEG_length, background-DEG_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
+DEG_repstat_pvalue[mod]<-1-phyper(DEG_reproductive_module_overlap[mod], DEG_rep_length, background-DEG_rep_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
 }
 
-moduleDEG_PSGE_genes_results<-cbind(module_name,module_size,active_PSGE_module_overlap,sterile_PSGE_module_overlap,DEG_reproductive_module_overlap,activePSGE_repstat_pvalue,sterilePSGE_repstat_pvalue,DEG_repstat_pvalue)%>%as.data.frame()
+ovary_moduleDEG_PSGE_genes_results<-cbind(module_name,module_size,
+                                          active_PSGE_module_overlap,
+                                          sterile_PSGE_module_overlap,
+                                          DEG_reproductive_module_overlap,
+                                          activePSGE_repstat_pvalue,
+                                          sterilePSGE_repstat_pvalue,
+                                          DEG_repstat_pvalue)%>%as.data.frame()
 
 
 
@@ -736,15 +754,15 @@ ovary_pvalues$ovary_correlation<-moduleTraitCor_ovary[[1]]$Rep_status
 colnames(ovary_pvalues)<-c("reproductive_pvalue", "module_name", "ovary_correlation")
 
 ##combining_everything
-moduleDEG_PSGE_genes_results<-left_join(moduleDEG_PSGE_genes_results, brain_pvalues)
+ovary_moduleDEG_PSGE_genes_results<-left_join(ovary_moduleDEG_PSGE_genes_results, ovary_pvalues)
 
 
-write.csv(moduleDEG_PSGE_genes_results,"../output/ovary_moduleDEG_PSGE_overlap_results.csv")
+write.csv(ovary_moduleDEG_PSGE_genes_results,"../output/ovary_moduleDEG_PSGE_overlap_results.csv")
 
 
 ##looking at specific modules
-# active_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_active )
-# sterile_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_sterile )
+# active_DEG_module42_overlap<-intersect(mod_sig_fbo_beebase$ME42,PSGE_active )
+# sterile_DEG_module42_overlap<-intersect(mod_sig_fbo_beebase$ME42,PSGE_sterile )
 
 ```
 

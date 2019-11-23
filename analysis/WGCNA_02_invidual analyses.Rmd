@@ -4,7 +4,7 @@ output: html_notebook
 editor_options: 
   chunk_output_type: inline
 ---
-```{r packages, message=FALSE, warning=FALSE}
+```{r packages, message=FALSE, warning=FALSE, verbose=FALSE}
 library(data.table)
 library(tidyverse)
 library(WGCNA)
