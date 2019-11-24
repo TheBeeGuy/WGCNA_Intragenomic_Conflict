@@ -321,6 +321,7 @@ sterileASE &lt;-sterile_brain[sterile_brain$bias!='No Bias',]
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<<<<<<< HEAD
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuMS1waHlwZXIoY29tbW9uX0RFRyxkZWdfYnJhaW5fbGVuZ3RoLCBiYWNrZ3JvdW5kLWRlZ19icmFpbl9sZW5ndGgsZGVnX3JlcF9sZW5ndGgpXG5cbmBgYCJ9 -->
 <pre class="r"><code>1-phyper(common_DEG,deg_brain_length, background-deg_brain_length,deg_rep_length)
 </code></pre>
@@ -338,6 +339,28 @@ sterileASE &lt;-sterile_brain[sterile_brain$bias!='No Bias',]
 <pre><code>[1] 7.213467e-07</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
+=======
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29tbW9uX0RFRzwtaW50ZXJzZWN0KERFR19icmFpbiRJRCxERUdfcmVwcm9kdWN0aXZlJElEKSU+JWxlbmd0aCgpXG5kZWdfYnJhaW5fbGVuZ3RoPC0gREVHX2JyYWluJElEJT4lbGVuZ3RoKClcbmRlZ19yZXBfbGVuZ3RoPC0gREVHX3JlcHJvZHVjdGl2ZSRJRCU+JWxlbmd0aCgpXG5iYWNrZ3JvdW5kIDwtIDE1MzE0XG4xLXBoeXBlcihjb21tb25fREVHLGRlZ19icmFpbl9sZW5ndGgsIGJhY2tncm91bmQtZGVnX2JyYWluX2xlbmd0aCxkZWdfcmVwX2xlbmd0aClcbmBgYCJ9 -->
+<pre class="r"><code>common_DEG&lt;-intersect(DEG_brain$ID,DEG_reproductive$ID)%&gt;%length()
+deg_brain_length&lt;- DEG_brain$ID%&gt;%length()
+deg_rep_length&lt;- DEG_reproductive$ID%&gt;%length()
+background &lt;- 15314
+1-phyper(common_DEG,deg_brain_length, background-deg_brain_length,deg_rep_length)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDAuMjc4NDMwNFxuIn0= -->
+<pre><code>[1] 0.2784304</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuMS1waHlwZXIoY29tbW9uX1BTR0UscHNnZV9icmFpbl9sZW5ndGgsIGJhY2tncm91bmQtcHNnZV9icmFpbl9sZW5ndGgscHNnZV9mYm9fbGVuZ3RoKVxuXG5gYGAifQ== -->
+<pre class="r"><code>1-phyper(common_PSGE,psge_brain_length, background-psge_brain_length,psge_fbo_length)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDcuMjEzNDY3ZS0wN1xuIn0= -->
+<pre><code>[1] 7.213467e-07</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+>>>>>>> 60c03e58ee5b0b44383c7917029e3ce869b60e32
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
