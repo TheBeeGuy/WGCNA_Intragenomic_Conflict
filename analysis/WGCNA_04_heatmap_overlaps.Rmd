@@ -149,6 +149,18 @@ pheatmap(pvalues,
         )
 dev.off()
 
+
+png(file = "../figures/ovary_module_geneslist_overlap_separate.png", wi = 4, he = 6,units = 'in',res = 300)
+pheatmap(pvalues, 
+         cluster_rows = F, 
+         cluster_cols = F,
+         show_rownames =T,
+         fontsize =14,
+         color = cols,
+         title = 'Ovary Overlaps with PSGE and DEG'
+        )
+dev.off()
+
 # #active figure
 # pdf(file = "../figures/ovary_module_geneslist_overlap_active.pdf", wi = 4, he = 6)
 # 
@@ -327,6 +339,16 @@ pheatmap(pvalues,
         )
 dev.off()
 
+
+png(file = "../figures/brain_module_geneslist_overlap_separate.png", wi = 4, he = 6,units = 'in',res = 300)
+pheatmap(pvalues, 
+         cluster_rows = F, 
+         cluster_cols = F,
+         show_rownames =T,
+         fontsize =14,
+         color = cols
+        )
+dev.off()
 # #active figure
 # pdf(file = "../figures/brain_module_geneslist_overlap_active.pdf", wi = 4, he = 6)
 # 
