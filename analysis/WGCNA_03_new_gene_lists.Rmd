@@ -21,6 +21,10 @@ load("../data/dds_gene_counts.Rdata")
 ```
 
 ```{r DEG and PSGE overlaps}
+FBO_psge_active<-read.csv("../data/PGSE-active.csv")
+FBO_psge_sterile<-read.csv("../data/PGSE-sterile.csv")
+
+
 PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
 PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
 DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
@@ -33,13 +37,49 @@ active_brain<-read.csv("../data/Brain_Imprinting_ASE_Rep_Overlap.csv",header=T)
 sterile_brain<-read.csv("../data/Brain_Imprinting_ASE_Str_Overlap.csv",header=T)
 
 activeASE<- active_brain[active_brain$bias!='No Bias',]
-sterileASE <-sterile_brain[active_brain$bias!='No Bias',]
+sterileASE <-sterile_brain[sterile_brain$bias!='No Bias',]
 
 # #Old
 # #these each have 3.5 K genes and 25 samples
 # 
 # active_brain<-read.table("../data/activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
 # sterile_brain<-read.table("../data/sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
+
+```
+
+```{r DEG common genes}
+common_DEG<-intersect(DEG_brain$ID,DEG_reproductive$ID)%>%length()
+deg_brain_length<- DEG_brain$ID%>%length()
+deg_rep_length<- DEG_reproductive$ID%>%length()
+background <- 15314
+
+1-phyper(common_DEG,deg_brain_length, background-deg_brain_length,deg_rep_length)
+
+```
+```{r PSGE common genes}
+
+##77 of the FBO PSGE are overlapping in sterile and active
+intersect(PSGE_active$ID,PSGE_sterile$ID)%>%length()
+
+#201 total PSGE in FBO tissue
+psge_fbo_length<- unique(PSGE_active$ID,PSGE_sterile$ID)%>%length()
+
+
+#17 of the brain PSGE are overlapping
+intersect(activeASE$ID,sterileASE$ID)%>%length()
+
+##77 total 
+psge_brain_length<- unique(activeASE$ID,sterileASE$ID)%>%length()
+
+
+
+common_PSGE<-intersect(unique(PSGE_active$ID,PSGE_sterile$ID) ,unique(activeASE$ID,sterileASE$ID))%>%length()
+
+background <- 15314
+
+1-phyper(common_PSGE,psge_brain_length, background-psge_brain_length,psge_fbo_length)
+
+
 
 ```
 
@@ -607,6 +647,8 @@ background<-15313
 
 ```
 
+
+
 ```{r brain overlaps ASEs}
 
 
@@ -712,7 +754,7 @@ active_PSGE_module_overlap<-sapply(mod_sig_fbo_beebase,m_intersect,var2=PSGE_act
 
 sterile_PSGE_module_overlap<-sapply(mod_sig_fbo_beebase,m_intersect,var2=PSGE_sterile$ID)
 
-DEG_reproductive_module_overlap<-sapply(mod_sig_fbo_beebase,m_intersect,var2=DEG_reproductive)
+DEG_reproductive_module_overlap<-sapply(mod_sig_fbo_beebase,m_intersect,var2=DEG_reproductive$ID)
 
 #length of genes
 sterile_PSGE_length<-PSGE_sterile$ID%>%unique_length()##length active psge
