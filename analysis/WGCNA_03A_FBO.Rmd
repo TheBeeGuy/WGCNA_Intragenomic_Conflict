@@ -12,6 +12,9 @@ library(viridis)
 library(KEGGprofile)
 library(DESeq2)
 library(RColorBrewer)
+source("../code/find_kegg.R")
+source("../code/module_intersect.R")
+source("../code/convert_entrez.R")
 ```
 
 #Load in Data from WGCNA Brain Ovaries file
@@ -20,7 +23,7 @@ load("../data/dds_gene_counts.Rdata")
 
 ```
 
-```{r DEG and PSGE overlaps}
+```{r DEG and PSGE}
 FBO_psge_active<-read.csv("../data/PGSE-active.csv")
 FBO_psge_sterile<-read.csv("../data/PGSE-sterile.csv")
 
@@ -32,31 +35,26 @@ DEG_brain<-read.csv('../data/DEG_brain_reproductive_status.csv')%>%select("ID")
 
 ```
 
-```{r}
+```{r PSGE brain data}
 active_brain<-read.csv("../data/Brain_Imprinting_ASE_Rep_Overlap.csv",header=T)
 sterile_brain<-read.csv("../data/Brain_Imprinting_ASE_Str_Overlap.csv",header=T)
 
 activeASE<- active_brain[active_brain$bias!='No Bias',]
 sterileASE <-sterile_brain[sterile_brain$bias!='No Bias',]
 
-# #Old
-# #these each have 3.5 K genes and 25 samples
-# 
-# active_brain<-read.table("../data/activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
-# sterile_brain<-read.table("../data/sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
-
 ```
 
-```{r DEG common genes}
+```{r DEG common genes overlaps}
 common_DEG<-intersect(DEG_brain$ID,DEG_reproductive$ID)%>%length()
 deg_brain_length<- DEG_brain$ID%>%length()
 deg_rep_length<- DEG_reproductive$ID%>%length()
 background <- 15314
 
-1-phyper(common_DEG,deg_brain_length, background-deg_brain_length,deg_rep_length)
-
+1-phyper(common_DEG,deg_rep_length, background-deg_rep_length,deg_brain_length)
 ```
-```{r PSGE common genes}
+
+
+```{r PSGE common genes overlaps}
 
 ##77 of the FBO PSGE are overlapping in sterile and active
 intersect(PSGE_active$ID,PSGE_sterile$ID)%>%length()
@@ -222,86 +220,6 @@ dev.off()
 ```
 
 
-```{r WGCNA brain}
-options(stringAsFactors = FALSE)
-enableWGCNAThreads()
-
-# We work with two sets:
-nSets = 1;
-
-# For easier labeling of plots, create a vector holding descriptive names of the two sets.
-setLabels = c( "Brain")
-shortLabels = c("B")
-# Form multi-set expression data: columns starting from 9 contain actual expression data.
-brainExpr = vector(mode = "list", length = nSets)
-
-###use ntd_brain, vst_brain,  rlog_brain, or common_brains
-##use ntd_FBO, vst_FBO, rlog_FBO, or common_ovaries
-
-
-
-brainExpr[[1]] = list(data=t(vst_all_brain))
-
-for(i in 1:nSets){
-    brainExpr[[i]]$data<- apply(brainExpr[[i]]$data,2,as.numeric)
-}
-
-names(brainExpr[[1]]$data) <- rownames(vst_all_brain)
-rownames(brainExpr[[1]]$data) <- colnames(vst_all_brain)
-
-
-
-exprSize = checkSets(brainExpr)
-
-
-# Form a multi-set structure that will hold the clinical traits.
-brain_Traits = vector(mode="list", length = nSets);
-for (set in 1:nSets)
-{
-setSamples = rownames(brainExpr[[set]]$data);
-traitRows = match(setSamples, rownames(all_info));
-brain_Traits[[set]] = list(data = all_info[traitRows, ]);
-rownames(brain_Traits[[set]]$data) =rownames(all_info[traitRows, ]);
-}
-
-collectGarbage();
-
-net_brain = blockwiseConsensusModules(
-brainExpr, power = 10, minModuleSize = 30, deepSplit = 2,
-pamRespectsDendro = FALSE,
- corType="bicor",
-mergeCutHeight = 0.25, numericLabels = TRUE,
-minKMEtoStay = 0,nThreads = 3,
-saveIndividualTOMs = T, saveConsensusTOMs = T, verbose = 5,
-networkType = "signed", maxBlockSize = 14086,
-TOMType = "signed")#can set block size to 15K for single analysis
-
-brainMEs = net_brain$multiMEs
-brainMLabels =net_brain$colors;
-# Convert the numeric labels to color labels
-brainMColors = labels2colors(brainMLabels)
-brainTree = net_brain$dendrograms[[1]];
-
-
-#consensus modules and colors
-pdf(file = "../figures/Brain Dendrogram w colors.pdf",width = 8, height = 6)
-
-plotDendroAndColors(brainTree, brainMColors[net_brain$goodGenes],"Module colors",
-dendroLabels = FALSE, hang = 0.03,
-addGuide = FALSE, guideHang = 0.05,
-main = "Brain gene dendrogram and module colors")
-dev.off()
-
-
- # save(brainMEs, brainMLabels,brainMColors,brainTree,net_brain,brain_Traits,brainExpr,setLabels,shortLabels, file = "../data/BrainModules.RData")
-
- 
- load("../data/BrainModules.RData")
- 
-
-
-
-```
 
 ```{r glm ovary }
 load("../data/OvaryModules.RData")
@@ -424,121 +342,6 @@ paste(setLabels, collapse = " and ")))
 dev.off()
 ```
 
-```{r glm brain }
-load("../data/BrainModules.RData")
-
-##setup variables
-nSets=1
-moduleTraitCor_brain = list();
-moduleTraitPvalue_brain = list();
-
-
-# Calculate the correlations
-
-for (set in 1:nSets){
-    
-res <- data.frame()
-pvalues<-data.frame()
-ME_names_brain<-colnames(brainMEs[[1]]$data)
-
-for (i in ME_names_brain){
-  trait_i<-brain_Traits[[set]]$data
-  test<-glm(brainMEs[[set]]$data[,i]~trait_i$MatxPat+
-                trait_i$Block+
-                trait_i$Rep_status)
-  #test%>%summary()%>%print()
-  ##get coefficients
-  coeff2<-coef(test)[2]
-  coeff3<-coef(test)[3]
-  coeff4<-coef(test)[4]
-  coeff<-data.frame(MatxPat=coeff2, 
-                    Block=coeff3,
-                    Rep_status=coeff4,
-                    row.names = i)
-  ##get pvalues
-  pval2<-coef(summary(test))[2,4]
-  pval3<-coef(summary(test))[3,4]
-  pval4<-coef(summary(test))[4,4]
-  pval<-data.frame(MatxPat=pval2,
-                   Block=pval3,
-                   Rep_status=pval4,
-                   row.names = i)
-  pvalues<-rbind(pvalues,pval)
-  res<-rbind(res,coeff)
-  }
-moduleTraitCor_brain[[set]]<-res
-moduleTraitPvalue_brain[[set]]<-pvalues
-}
-```
-
-
-
-
-```{r brain modules figure signed}
-
-
-# Initialize matrices to hold the consensus correlation and p-value
-BrainCor = matrix(NA, nrow(moduleTraitCor_brain[[1]]), ncol(moduleTraitCor_brain[[1]]));
-BrainPvalue = matrix(NA, nrow(moduleTraitCor_brain[[1]]), ncol(moduleTraitCor_brain[[1]]));
-# Find consensus negative correlations
-negative = moduleTraitCor_brain[[1]] < 0 
-BrainCor[negative] = pmax(moduleTraitCor_brain[[1]][negative]);
-BrainPvalue[negative] = pmax(moduleTraitPvalue_brain[[1]][negative]);
-# Find consensus positive correlations
-positive = moduleTraitCor_brain[[1]] > 0 
-BrainCor[positive] = pmin(moduleTraitCor_brain[[1]][positive]);
-BrainPvalue[positive] = pmax(moduleTraitPvalue_brain[[1]][positive]);
-
-##plotting consensus figure
-
-BrainPvalue[is.na(BrainPvalue)]<-1
-BrainPvalue<-as.data.frame(BrainPvalue)
-##only display those that are significant
-display<-pmap_dfr(BrainPvalue,~data.frame(min_MatxPat=..1>0.05 , min_Block=..2>0.05 , min_Rep=..3>0.05))
-
-BrainCor[display==T]<-NA
-
-pvalues<-BrainPvalue
-pvalues<-cbind(pvalues,pmap_dfr(pvalues,~data.frame(min=min(..1,..2,..3))))
-
-# keep only those modules with at least 1 pvalue <0.05
-# For brain or ovary alone, it looks better to run the following code to filter figure
-# However to build consensus figure, don't filter yet to keep number of rows the same
-rownames(BrainCor)<-rownames(moduleTraitCor_brain[[1]])
-colnames(BrainCor)<-colnames(moduleTraitCor_brain[[1]])
-
-BrainPvalue<-BrainPvalue[pvalues$min<0.05,]
-BrainCor<-BrainCor[pvalues$min<0.05,]
-
-
-textMatrix_brain = paste(signif(BrainCor, 2)%>%as.matrix(), "\n(P = ",
-signif(BrainPvalue, 2)%>%as.matrix(), ")", sep = "")
-dim(textMatrix_brain) = dim(BrainCor)
-
-# ##pvalues set in individual figures
-# ## is it in the figure? included extra NA for background
-# 
-# included_brain_fig<-c(NA,pvalues$min<0.05)
-
-
-pdf(file = "../figures/BrainTraitRelationships-signed.pdf", wi = 6, he = 6);
-par(mar = c(6, 8.8, 3, 2.2));
-labeledHeatmap(Matrix = BrainCor,
-xLabels = colnames(BrainCor),
-yLabels = rownames(BrainCor),
-ySymbols = rownames(BrainCor),
-colorLabels = FALSE,
-colors = cols,
-textMatrix = textMatrix_brain,
-setStdMargins = FALSE,
-cex.text = 0.5,
-zlim = c(-1,1),
-main = paste(" module-trait relationships across\n",
-paste(setLabels, collapse = " and ")))
-dev.off()
-```
-
-
 
 
 ```{r getting ovary module gene lists}
@@ -584,155 +387,12 @@ Hubgenes_FBO<-chooseTopHubInEachModule(datExpr = ovaryExpr[[1]]$data, #gene expr
 
 ```
 
-```{r getting brain module gene lists}
-#consMEs,consMColors,consMLabels,ME_names
-conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID)
-MEdata_brain<-brainExpr[[1]]$data
-gene_name<-colnames(MEdata_brain)%>%as.data.frame
-colnames(gene_name)<-"Beebase"
-gene_entrez<-left_join(gene_name,conversion)%>%distinct
-all(gene_entrez$Beebase==colnames(MEdata_brain))
-
-##this line of code subs in the entrez, which is used for the KEGGs
-#However, beebase useful for the overlaps with DMLs
-#colnames(MEdata)<-gene_entrez$Entrez
-
-
-
-
-
-module_brain_significant_genes<-data.frame(background=colnames(MEdata_brain))
-for (i in ME_names_brain){
-  whichModule= sub(i,pattern = "ME",replacement = "")
-  name<-paste(i,"_kME",sep = "")
-  
-genes<-row.names(t(MEdata_brain))[brainMLabels==whichModule]
-length(genes)<-length(row.names(t(MEdata_brain)))
-
-name=data.frame("gene"=genes)
-module_brain_significant_genes<-cbind(module_brain_significant_genes,genes)
-}
-colnames(module_brain_significant_genes)<-c("background",ME_names_brain)
-
-write.csv(module_brain_significant_genes, "../output/WGCNA_brainspecific_Sig_Modules_genes_entrez.csv")
-
-##Getting Hub Genes
-power=10
-
-Hubgenes_BRAIN<-chooseTopHubInEachModule(datExpr = brainExpr[[1]]$data, #gene expression data, rows =samples; columns =genes  
-   colorh=brainMLabels, #module assignments for all rows  
-   omitColors = "0", 
-   power = power, 
-   type = "signed")
-
-```
-
 
 ```{r DEG sanity check gene lists}
 all_mod_genes<-ovaryExpr[[1]]$data%>%colnames()
 overlaps_DEG_background<-intersect(DEG_reproductive$ID,all_mod_genes)
 ```
 
-
-
-
-```{r define overlap functions}
-#get number of gene overlaps
-m_intersect <- function(var1,var2){intersect(var1,var2)%>%unique()%>%length()}
-
-#get number of unique genes
-unique_length<-function(x){length(unique(x))}
-
-background<-15313
-
-```
-
-
-
-```{r brain overlaps ASEs}
-
-
-#read in beebase ids
-mod_sig_beebase<-read.csv("../output/WGCNA_brainspecific_Sig_Modules_genes_entrez.csv")%>%select(-X)
-
-#name of modules
-module_name<-mod_sig_beebase%>%colnames()
-
-
-#get size of each module
-module_size<-apply(X = mod_sig_beebase,2, FUN = unique_length)
-
-#Hypergeometric tests for active genes
-
-##get overlaps for DEGs
-active_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=activeASE$ID)
-
-sterile_PSGE_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=sterileASE$ID)
-
-DEG_reproductive_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_reproductive$ID)
-
-
-DEG_brain_module_overlap<-sapply(mod_sig_beebase,m_intersect,var2=DEG_brain$ID)
-
-#length of genes
-sterile_PSGE_length<-sterileASE$ID%>%unique_length()##length active psge
-active_PSGE_length<-activeASE$ID%>%unique_length()#length sterile psge
-DEG_rep_length<-DEG_reproductive$ID%>%unique_length()#length deg
-
-DEG_brain_length<-DEG_brain$ID%>%unique_length()#length deg
-
-#Sterlie psge oerlaps
-sterilePSGE_repstat_pvalue<-c()
-for(mod in 1:length(module_name)){
-sterilePSGE_repstat_pvalue[mod]<-1-phyper(sterile_PSGE_module_overlap[mod], sterile_PSGE_length, background-sterile_PSGE_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
-}
-
-#active psge overlaps
-activePSGE_repstat_pvalue<-c()
-for(mod in 1:length(module_name)){
-activePSGE_repstat_pvalue[mod]<-1-phyper(active_PSGE_module_overlap[mod], active_PSGE_length, background-active_PSGE_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
-}
-
-#DEG_opverlaps
-DEG_repstat_pvalue<-c()
-for(mod in 1:length(module_name)){
-DEG_repstat_pvalue[mod]<-1-phyper(DEG_reproductive_module_overlap[mod], DEG_rep_length, background-DEG_rep_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
-}
-
-DEG_brain_pvalue<-c()
-for(mod in 1:length(module_name)){
-DEG_brain_pvalue[mod]<-1-phyper(DEG_brain_module_overlap[mod], DEG_brain_length, background-DEG_brain_length, module_size[mod], lower.tail = TRUE, log.p = FALSE)
-}
-
-brain_moduleDEG_PSGE_genes_results<-cbind(module_name,
-                                          module_size,
-                                          active_PSGE_module_overlap,
-                                          sterile_PSGE_module_overlap,
-                                          DEG_brain_module_overlap,
-                                          activePSGE_repstat_pvalue,
-                                          sterilePSGE_repstat_pvalue,
-                                          DEG_brain_pvalue)%>%as.data.frame()
-
-
-
-##adding in reproductive status pvalue from GLM
-brain_pvalues<-moduleTraitPvalue_brain[[1]]$Rep_status%>%as.data.frame()
-brain_pvalues$module_name<-rownames(moduleTraitPvalue_brain[[1]])
-brain_pvalues$ovary_correlation<-moduleTraitCor_brain[[1]]$Rep_status
-colnames(brain_pvalues)<-c("reproductive_pvalue", "module_name", "ovary_correlation")
-
-##combining_everything
-brain_moduleDEG_PSGE_genes_results<-left_join(brain_moduleDEG_PSGE_genes_results, brain_pvalues)
-
-
-write.csv(brain_moduleDEG_PSGE_genes_results,"../output/brain_moduleDEG_PSGE_overlap_results.csv")
-
-
-##looking at specific modules
-# active_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_active )
-# sterile_DEG_module42_overlap<-intersect(mod_sig_beebase$ME42,PSGE_sterile )
-
-```
 
 ```{r ovary overlaps ASEs}
 
@@ -807,18 +467,28 @@ write.csv(ovary_moduleDEG_PSGE_genes_results,"../output/ovary_moduleDEG_PSGE_ove
 # sterile_DEG_module42_overlap<-intersect(mod_sig_fbo_beebase$ME42,PSGE_sterile )
 
 ```
+```{r converting to entrez, warning=F}
+
+## test that it's working
+convert_entrez(module_ovary_significant_genes$background, conversion)%>%head()
+
+## convert significant beebase genes to significant 
+FBO_entrez_modules<-convert_table(module_ovary_significant_genes,conversion)
+
+
+```
+
+
 
 
 ```{r keggs for module genes}
-source("../code/find_kegg.R")
-
-kegg_pathways_WGCNA<-find_keggs(module_significant_genes)
-colnames(kegg_pathways_WGCNA)<-colnames(module_significant_genes)
+kegg_pathways_WGCNA_FBO<-find_keggs(FBO_entrez_modules)
+colnames(kegg_pathways_WGCNA_FBO)<-colnames(FBO_entrez_modules)
 
 
-write.csv(kegg_pathways_WGCNA, file = "../output/kegg_pathways_WGCNA_BvFBO.csv")
+write.csv(kegg_pathways_WGCNA_FBO, file = "../output/kegg_pathways_WGCNA_FBO.csv")
 #read.csv("../output/kegg_pathways_WGCNA_BvFBO.csv")
-kegg_pathways_WGCNA$ME42
+kegg_pathways_WGCNA_FBO$ME7
 ```
 
 

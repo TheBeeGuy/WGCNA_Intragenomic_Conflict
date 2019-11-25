@@ -1,0 +1,41 @@
+"","background","ME5","ME9","ME22","ME4","ME8","ME1","ME7","ME17","ME18","ME11","ME19","ME10","ME21","ME12","ME14","ME13","ME2","ME3","ME15","ME20","ME6","ME16","ME0"
+"1","Glycolysis / Gluconeogenesis","Neuroactive ligand-receptor interaction","Spliceosome",NA,"Tyrosine metabolism",NA,"Mucin type O-glycan biosynthesis","Phosphatidylinositol signaling system","Ribosome",NA,"Citrate cycle (TCA cycle)","Carbon metabolism","Aminoacyl-tRNA biosynthesis","Protein processing in endoplasmic reticulum",NA,NA,NA,"Glycine, serine and threonine metabolism","Ubiquinone and other terpenoid-quinone biosynthesis","Metabolic pathways",NA,"Glycosylphosphatidylinositol (GPI)-anchor biosynthesis","Aminoacyl-tRNA biosynthesis","Metabolic pathways"
+"2","Citrate cycle (TCA cycle)",NA,NA,NA,"Spliceosome",NA,"Sphingolipid metabolism","Protein processing in endoplasmic reticulum",NA,NA,"Pyruvate metabolism","Ribosome","Ribosome biogenesis in eukaryotes",NA,NA,NA,NA,"Aminoacyl-tRNA biosynthesis","Oxidative phosphorylation",NA,NA,"Homologous recombination",NA,NA
+"3","Pentose phosphate pathway",NA,NA,NA,NA,NA,"Metabolic pathways",NA,NA,NA,"Biosynthesis of unsaturated fatty acids","Proteasome","Proteasome",NA,NA,NA,NA,"Metabolic pathways","Metabolic pathways",NA,NA,"Fanconi anemia pathway",NA,NA
+"4","Pentose and glucuronate interconversions",NA,NA,NA,NA,NA,"MAPK signaling pathway - fly",NA,NA,NA,"Metabolic pathways",NA,"Protein export",NA,NA,NA,NA,"RNA degradation",NA,NA,NA,NA,NA,NA
+"5","Fructose and mannose metabolism",NA,NA,NA,NA,NA,"FoxO signaling pathway",NA,NA,NA,"Carbon metabolism",NA,"Protein processing in endoplasmic reticulum",NA,NA,NA,NA,"DNA replication",NA,NA,NA,NA,NA,NA
+"6","Galactose metabolism",NA,NA,NA,NA,NA,"Ubiquitin mediated proteolysis",NA,NA,NA,"Fatty acid metabolism",NA,NA,NA,NA,NA,NA,"Base excision repair",NA,NA,NA,NA,NA,NA
+"7","Ascorbate and aldarate metabolism",NA,NA,NA,NA,NA,"Endocytosis",NA,NA,NA,"Peroxisome",NA,NA,NA,NA,NA,NA,"Mismatch repair",NA,NA,NA,NA,NA,NA
+"8","Fatty acid biosynthesis",NA,NA,NA,NA,NA,"Longevity regulating pathway - multiple species",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,"Homologous recombination",NA,NA,NA,NA,NA,NA
+"9","Fatty acid elongation",NA,NA,NA,NA,NA,"Wnt signaling pathway",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,"Fanconi anemia pathway",NA,NA,NA,NA,NA,NA
+"10","Fatty acid degradation",NA,NA,NA,NA,NA,"Dorso-ventral axis formation",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,"Peroxisome",NA,NA,NA,NA,NA,NA
+"11","Synthesis and degradation of ketone bodies",NA,NA,NA,NA,NA,"Notch signaling pathway",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"12","Ubiquinone and other terpenoid-quinone biosynthesis",NA,NA,NA,NA,NA,"Hedgehog signaling pathway - fly",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"13","Oxidative phosphorylation",NA,NA,NA,NA,NA,"TGF-beta signaling pathway",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"14","Arginine biosynthesis",NA,NA,NA,NA,NA,"Hippo signaling pathway - fly",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"15","Purine metabolism",NA,NA,NA,NA,NA,"Hippo signaling pathway - multiple species",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"16","Pyrimidine metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"17","Alanine, aspartate and glutamate metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"18","Glycine, serine and threonine metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"19","Cysteine and methionine metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"20","Valine, leucine and isoleucine degradation",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"21","Lysine degradation",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"22","Arginine and proline metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"23","Histidine metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"24","Tyrosine metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"25","Phenylalanine metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"26","Tryptophan metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"27","beta-Alanine metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"28","Taurine and hypotaurine metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"29","Selenocompound metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"30","Glutathione metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"31","Starch and sucrose metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"32","N-Glycan biosynthesis",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"33","Other glycan degradation",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"34","Mucin type O-glycan biosynthesis",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"35","Various types of N-glycan biosynthesis",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"36","Other types of O-glycan biosynthesis",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"37","Mannose type O-glycan biosynthesis",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"38","Amino sugar and nucleotide sugar metabolism",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"39","Glycosaminoglycan degradation",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"40","Glycosaminoglycan biosynthesis - chondroitin sulfate / dermatan sulfate",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
