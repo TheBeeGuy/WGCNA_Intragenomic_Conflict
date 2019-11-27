@@ -186,7 +186,8 @@ for (i in ME_names_brain){
                    row.names = i)
   pvalues<-rbind(pvalues,pval)
   res<-rbind(res,coeff)
-  }
+}
+rownames(res)<-sub("ME","B ",rownames(res))
 moduleTraitCor_brain[[set]]<-res
 moduleTraitPvalue_brain[[set]]<-pvalues
 }
@@ -228,9 +229,15 @@ pvalues<-cbind(pvalues,pmap_dfr(pvalues,~data.frame(min=min(..1,..2,..3))))
 rownames(BrainCor)<-rownames(moduleTraitCor_brain[[1]])
 colnames(BrainCor)<-colnames(moduleTraitCor_brain[[1]])
 
+rownames(BrainPvalue)<-rownames(moduleTraitCor_brain[[1]])
+colnames(BrainPvalue)<-colnames(moduleTraitCor_brain[[1]])
+
 BrainPvalue<-BrainPvalue[pvalues$min<0.05,]
 BrainCor<-BrainCor[pvalues$min<0.05,]
 
+row_order_B<-sub("B ",'',rownames(BrainCor))%>%as.numeric()
+BrainCor<-BrainCor[order(row_order_B),]
+BrainPvalue<-BrainPvalue[order(row_order_B),]
 
 textMatrix_brain = paste(signif(BrainCor, 2)%>%as.matrix(), "\n(P = ",
 signif(BrainPvalue, 2)%>%as.matrix(), ")", sep = "")
@@ -253,9 +260,10 @@ colors = cols,
 textMatrix = textMatrix_brain,
 setStdMargins = FALSE,
 cex.text = 0.5,
-zlim = c(-1,1),
-main = paste(" module-trait relationships across\n",
-paste(setLabels, collapse = " and ")))
+zlim = c(-1,1)
+# main = paste(" module-trait relationships across\n",
+# paste(setLabels, collapse = " and "))
+)
 dev.off()
 ```
 
@@ -290,7 +298,15 @@ length(genes)<-length(row.names(t(MEdata_brain)))
 name=data.frame("gene"=genes)
 module_brain_significant_genes<-cbind(module_brain_significant_genes,genes)
 }
-colnames(module_brain_significant_genes)<-c("background",ME_names_brain)
+
+
+new_names <- sub('ME',"B ", ME_names_brain)
+colnames(module_brain_significant_genes)<-c("background",new_names)
+
+num_order = sub("B ",'',colnames(module_brain_significant_genes))%>%as.numeric()
+
+module_brain_significant_genes<- module_brain_significant_genes[order(num_order)]
+
 
 write.csv(module_brain_significant_genes, "../output/WGCNA_brainspecific_Sig_Modules_genes_entrez.csv")
 

@@ -27,7 +27,6 @@ load("../data/dds_gene_counts.Rdata")
 FBO_psge_active<-read.csv("../data/PGSE-active.csv")
 FBO_psge_sterile<-read.csv("../data/PGSE-sterile.csv")
 
-
 PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
 PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
 DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
@@ -76,9 +75,6 @@ common_PSGE<-intersect(unique(PSGE_active$ID,PSGE_sterile$ID) ,unique(activeASE$
 background <- 15314
 
 1-phyper(common_PSGE,psge_brain_length, background-psge_brain_length,psge_fbo_length)
-
-
-
 ```
 
 ```{r WGCNA ovary}
@@ -220,7 +216,6 @@ dev.off()
 ```
 
 
-
 ```{r glm ovary }
 load("../data/OvaryModules.RData")
 
@@ -263,10 +258,12 @@ for (i in ME_names_ovary){
                    row.names = i)
   pvalues<-rbind(pvalues,pval)
   res<-rbind(res,coeff)
-  }
+}
+rownames(res)<-sub("ME","FBO ",rownames(res))
 moduleTraitCor_ovary[[set]]<-res
 moduleTraitPvalue_ovary[[set]]<-pvalues
 }
+
 ```
 
 
@@ -316,9 +313,15 @@ pvalues<-cbind(pvalues,pmap_dfr(pvalues,~data.frame(min=min(..1,..2,..3))))
 rownames(OvaryCor)<-rownames(moduleTraitCor_ovary[[1]])
 colnames(OvaryCor)<-colnames(moduleTraitCor_ovary[[1]])
 
+rownames(OvaryPvalue)<-rownames(moduleTraitCor_ovary[[1]])
+colnames(OvaryPvalue)<-colnames(moduleTraitCor_ovary[[1]])
+
 OvaryPvalue<-OvaryPvalue[pvalues$min<0.05,]
 OvaryCor<-OvaryCor[pvalues$min<0.05,]
 
+row_order<-sub("FBO ",'',rownames(OvaryCor))%>%as.numeric()
+OvaryCor<-OvaryCor[order(row_order),]
+OvaryPvalue<-OvaryPvalue[order(row_order),]
 
 textMatrix = paste(signif(OvaryCor, 2)%>%as.matrix(), "\n(P = ",
 signif(OvaryPvalue, 2)%>%as.matrix(), ")", sep = "")
@@ -336,9 +339,10 @@ colors = cols,
 textMatrix = textMatrix,
 setStdMargins = FALSE,
 cex.text = 0.5,
-zlim = c(-1,1),
-main = paste(" module-trait relationships across\n",
-paste(setLabels, collapse = " and ")))
+zlim = c(-1,1)
+# main = paste(" module-trait relationships across\n",
+# paste(setLabels, collapse = " and "))
+)
 dev.off()
 ```
 
@@ -372,7 +376,13 @@ length(genes)<-length(row.names(t(MEdata_ovary)))
 name=data.frame("gene"=genes)
 module_ovary_significant_genes<-cbind(module_ovary_significant_genes,genes)
 }
-colnames(module_ovary_significant_genes)<-c("background",ME_names_ovary)
+
+new_names <- sub('ME',"FBO ", ME_names_ovary)
+colnames(module_ovary_significant_genes)<-c("background",new_names)
+
+num_order = sub("FBO ",'',colnames(module_ovary_significant_genes))%>%as.numeric()
+
+module_ovary_significant_genes<- module_ovary_significant_genes[order(num_order)]
 
 write.csv(module_ovary_significant_genes, "../output/WGCNA_ovaryspecific_Sig_Modules_genes_entrez.csv")
 

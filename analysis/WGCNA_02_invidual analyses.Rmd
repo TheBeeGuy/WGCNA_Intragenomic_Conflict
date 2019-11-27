@@ -40,6 +40,8 @@ sterile_brain<-read.csv("../data/Brain_Imprinting_ASE_Str_Overlap.csv",header=T)
 
 ```
 
+
+
 ```{r WGCNA ovary}
 options(stringAsFactors = FALSE)
 enableWGCNAThreads()
@@ -359,7 +361,7 @@ signif(OvaryPvalue, 2)%>%as.matrix(), ")", sep = "")
 dim(textMatrix) = dim(OvaryCor)
 
 
-pdf(file = "../figures/OvaryTraitRelationships-signed.pdf", wi = 6, he = 6);
+png(file = "../figures/OvaryTraitRelationships-signed.png", wi = 6, he = 6,units='in',res = 300);
 par(mar = c(6, 8.8, 3, 2.2));
 labeledHeatmap(Matrix = OvaryCor,
 xLabels = colnames(OvaryCor),
@@ -468,7 +470,7 @@ signif(BrainPvalue, 2)%>%as.matrix(), ")", sep = "")
 dim(textMatrix_brain) = dim(BrainCor)
 
 
-pdf(file = "../figures/BrainTraitRelationships-signed.pdf", wi = 6, he = 6);
+png(file = "../figures/BrainTraitRelationships-signed.png", wi = 6, he = 6, units = 'in',res=300);
 par(mar = c(6, 8.8, 3, 2.2));
 labeledHeatmap(Matrix = BrainCor,
 xLabels = colnames(BrainCor),
