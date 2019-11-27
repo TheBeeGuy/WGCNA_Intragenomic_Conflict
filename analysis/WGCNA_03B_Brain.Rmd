@@ -249,7 +249,7 @@ dim(textMatrix_brain) = dim(BrainCor)
 # included_brain_fig<-c(NA,pvalues$min<0.05)
 
 
-pdf(file = "../figures/BrainTraitRelationships-signed.pdf", wi = 6, he = 6);
+png(file = "../figures/BrainTraitRelationships-signed.png", wi = 6, he = 6,units = 'in',res=300);
 par(mar = c(6, 8.8, 3, 2.2));
 labeledHeatmap(Matrix = BrainCor,
 xLabels = colnames(BrainCor),
@@ -395,7 +395,7 @@ brain_moduleDEG_PSGE_genes_results<-cbind(module_name,
 
 ##adding in reproductive status pvalue from GLM
 brain_pvalues<-moduleTraitPvalue_brain[[1]]$Rep_status%>%as.data.frame()
-brain_pvalues$module_name<-rownames(moduleTraitPvalue_brain[[1]])
+brain_pvalues$module_name<-sub("ME","B.",rownames(moduleTraitPvalue_brain[[1]]))
 brain_pvalues$ovary_correlation<-moduleTraitCor_brain[[1]]$Rep_status
 colnames(brain_pvalues)<-c("reproductive_pvalue", "module_name", "ovary_correlation")
 

@@ -328,7 +328,7 @@ signif(OvaryPvalue, 2)%>%as.matrix(), ")", sep = "")
 dim(textMatrix) = dim(OvaryCor)
 
 
-pdf(file = "../figures/OvaryTraitRelationships-signed.pdf", wi = 6, he = 6);
+png(file = "../figures/OvaryTraitRelationships-signed.png", wi = 6, he = 6,units = 'in', res=300);
 par(mar = c(6, 8.8, 3, 2.2));
 labeledHeatmap(Matrix = OvaryCor,
 xLabels = colnames(OvaryCor),
@@ -455,13 +455,14 @@ ovary_moduleDEG_PSGE_genes_results<-cbind(module_name,module_size,
                                           DEG_reproductive_module_overlap,
                                           activePSGE_repstat_pvalue,
                                           sterilePSGE_repstat_pvalue,
-                                          DEG_repstat_pvalue)%>%as.data.frame()
+                                          DEG_repstat_pvalue)%>%
+                                as.data.frame()
 
 
 
 ##adding in reproductive status pvalue from GLM
 ovary_pvalues<-moduleTraitPvalue_ovary[[1]]$Rep_status%>%as.data.frame()
-ovary_pvalues$module_name<-rownames(moduleTraitPvalue_ovary[[1]])
+ovary_pvalues$module_name<-sub("ME","FBO.",rownames(moduleTraitPvalue_ovary[[1]]))
 ovary_pvalues$ovary_correlation<-moduleTraitCor_ovary[[1]]$Rep_status
 colnames(ovary_pvalues)<-c("reproductive_pvalue", "module_name", "ovary_correlation")
 
