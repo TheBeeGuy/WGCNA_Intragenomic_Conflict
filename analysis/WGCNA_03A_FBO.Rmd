@@ -76,6 +76,29 @@ background <- 15314
 
 1-phyper(common_PSGE,psge_brain_length, background-psge_brain_length,psge_fbo_length)
 ```
+```{r DEG PSGE overlaps}
+##Brain DEG and Ovary PSGE
+
+common_BrainDEG_OvaryPSGE<-intersect(DEG_brain$ID, unique(PSGE_active$ID,PSGE_sterile$ID))%>%length()
+
+
+
+background <- 15314
+
+1-phyper(common_BrainDEG_OvaryPSGE,deg_brain_length, background-deg_brain_length,psge_fbo_length)
+
+
+
+### Ovary DEG and Brain PSGE
+
+common_OvaryDEG_BrainPSGE<-intersect(DEG_reproductive$ID, unique(activeASE$ID,sterileASE$ID))%>%length()
+
+
+
+1-phyper(common_OvaryDEG_BrainPSGE,deg_rep_length, background-deg_rep_length,psge_brain_length)
+
+
+```
 
 ```{r WGCNA ovary}
 options(stringAsFactors = FALSE)
