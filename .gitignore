@@ -2,4 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-analysis/consensusTOM-block.2.RData
+*TOM*.RData
+*.html

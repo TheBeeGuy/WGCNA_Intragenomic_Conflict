@@ -100,6 +100,16 @@ common_OvaryDEG_BrainPSGE<-intersect(DEG_reproductive$ID, unique(activeASE$ID,st
 
 ```
 
+```{r PSGE across tissues}
+overlap_psge <- 12
+brain_psge <- 81+39
+fbo_psge<-201
+background <- 15314
+
+1-phyper(overlap_psge,brain_psge, background-brain_psge,fbo_psge)
+```
+
+
 ```{r WGCNA ovary}
 options(stringAsFactors = FALSE)
 enableWGCNAThreads()
