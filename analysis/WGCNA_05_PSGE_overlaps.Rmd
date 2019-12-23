@@ -1,0 +1,100 @@
+---
+title: "WGCNA_05_PSGE_Presence_Tissue"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+```{r packages}
+library(tidyverse)
+
+
+```
+
+```{r}
+##from WGCNA 01
+FBO_psge_active<-read.csv("../data/PGSE-active.csv")
+FBO_psge_sterile<-read.csv("../data/PGSE-sterile.csv")
+
+PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
+PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
+
+active_brain<-read.csv("../data/Brain_Imprinting_ASE_Rep_Overlap.csv",header=T)
+sterile_brain<-read.csv("../data/Brain_Imprinting_ASE_Str_Overlap.csv",header=T)
+
+activeASE<- active_brain[active_brain$bias!='No Bias',]
+sterileASE <-sterile_brain[sterile_brain$bias!='No Bias',]
+
+
+
+all_expr<-read.table("../data/all_expr.txt",header=T)%>%as.data.frame()
+
+all_expr_updated<-read.table("../data/exprUpdated.txt",header=T)%>%as.data.frame()
+##read in updated expression list and samples for the brain
+all_info<-read.table("../data/all_sample_info.pData.txt",header=T,row.names = 1)%>%as.data.frame()
+
+pDataUpdated<-read.table("../data/pDataUpdated.txt",header=T,row.names = 1)%>%as.data.frame()
+
+
+##subset all genes and info into brain and FBO
+
+rownames(all_expr)<-all_expr$chrmxfeaturexstartxendxID
+all_expr<-all_expr%>%select(-chrmxfeaturexstartxendxID)
+all(colnames(all_expr)==rownames(all_info))##all genes check out
+
+#subsetting for tissue specific dataset
+#all_expr_brain<-all_expr[,all_info$Tissue=="Brain"]
+all_expr_brain<-all_expr_updated%>%select(rownames(pDataUpdated)) #use this instead
+all_expr_ovary<-all_expr[,all_info$Tissue=="FBO"]
+
+
+
+##updated Brain dataset
+
+pDataUpdated$Tissue<-"Brain"
+pDataUpdated<-pDataUpdated%>%select(-Line)
+### Preparing all genes sample info
+FBOnames<-rownames(all_info[all_info$Tissue=="FBO",])
+all_info<-all_info%>%select(Rep_status,Block,MatxPat,Tissue)
+all_info_FBO<-all_info%>%filter(Tissue=="FBO")
+rownames(all_info_FBO)<-FBOnames
+
+##merge updated brainsback
+all_info<-rbind(all_info_FBO,pDataUpdated )
+
+##merge updated brain gene list back into the pipe
+all_expr<-cbind(all_expr_ovary,all_expr_brain)%>%select(rownames(all_info))
+
+```
+
+
+```{r}
+activeASE<-activeASE%>%rename(brain_active_bias=bias)
+sterileASE<-sterileASE%>%rename(brain_sterile_bias=bias)
+FBO_psge_active<-FBO_psge_active%>%rename(fbo_active_bias=bias)
+FBO_psge_sterile<-FBO_psge_sterile%>%rename(fbo_sterile_bias=bias)
+```
+
+
+```{r}
+brain_biases<-full_join(activeASE[,1:2],sterileASE[,1:2])
+fbo_biases<-full_join(FBO_psge_active[,c(1,7)],FBO_psge_sterile[,c(1,7)])
+
+all_biases<-full_join(brain_biases,fbo_biases)
+
+Brain_PSGE_presence_FBO<-all_expr_ovary[all_biases$ID,]%>%rowSums()%>%as.data.frame()
+FBO_PSGE_presence_brain<-all_expr_brain[all_biases$ID,]%>%rowSums()%>%as.data.frame()
+
+colnames(Brain_PSGE_presence_FBO)<-'presence_FBO'
+colnames(FBO_PSGE_presence_brain)<-'presence_brain'
+
+Brain_PSGE_presence_FBO$ID<-rownames(Brain_PSGE_presence_FBO)
+FBO_PSGE_presence_brain$ID<-rownames(Brain_PSGE_presence_FBO)
+
+all_biases<-left_join(all_biases,Brain_PSGE_presence_FBO)
+all_biases<-left_join(all_biases,FBO_PSGE_presence_brain)
+
+
+write.csv(all_biases,file = '../output/biases_presences.csv')
+```

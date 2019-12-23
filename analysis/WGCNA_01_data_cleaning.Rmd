@@ -1,0 +1,262 @@
+---
+title: "WGCNA Brain Ovaries"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+```{r packages, message=FALSE, warning=FALSE}
+library(data.table)
+library(tidyverse)
+library(WGCNA)
+library(viridis)
+library(KEGGprofile)
+library(DESeq2)
+library(RColorBrewer)
+```
+
+```{r load data}
+#read genes with Allele specific expression data
+active_brain<-read.table("../data/activeReadCounts_gene_brain.txt",header=T)%>%as.data.frame()
+active_FO<-read.table("../data/activeReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
+sterile_brain<-read.table("../data/sterileReadCounts_gene_brain.txt",header=T)%>%as.data.frame() 
+sterile_FO<-read.table("../data/sterileReadCounts_gene_FO.txt",header=T)%>%as.data.frame()
+
+
+##read in all_expr data set
+all_expr<-read.table("../data/all_expr.txt",header=T)%>%as.data.frame()
+
+all_expr_updated<-read.table("../data/exprUpdated.txt",header=T)%>%as.data.frame()
+
+##are these compatible
+all(rownames(all_expr_updated)==all_expr$chrmxfeaturexstartxendxID)
+
+
+#read in sample info
+fbo_doe<-read.table("../data/FBO_doe.txt",header=T,stringsAsFactors = F)%>%as.data.frame()
+brain_doe<-read.table("../data/pDataASE_brain.txt",header=T,stringsAsFactors = F)%>%as.data.frame()%>%mutate(Tissue="Brain",Allele=parent,Block=Block,Line=line)%>%select(-SampleID,-Unk_Identifier, -S_num, -subspecies,-line, -parent)
+
+
+
+##read in binary traits
+fbo_trait_binary<-read.table("../data/FBO_doe_binary.txt", header=T)
+brain_trait_binary<-read.table("../data/brain_doe_binary.txt", header=T)
+#REp Status - 0 is sterile, 1 is Reprdouctive
+#MatxPat - 0 is ExA, 1 is AxE
+#Tissue - 0 is FBO, 1 is Brain
+#Allele - 0 is Queen, 1 is Drone
+#Block - 0 is A, 1 is B
+
+##read in updated expression list and samples for the brain
+all_info<-read.table("../data/all_sample_info.pData.txt",header=T,row.names = 1)%>%as.data.frame()
+
+pDataUpdated<-read.table("../data/pDataUpdated.txt",header=T,row.names = 1)%>%as.data.frame()
+
+```
+
+
+```{r data DEG and PSGE overlaps}
+PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
+PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
+DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
+
+```
+
+
+```{r cleaning allelic expression data}
+
+##preparing sample info for allelic expression
+all(colnames(fbo_trait_binary)==colnames(brain_trait_binary))
+all_doe_bin<-rbind(fbo_trait_binary,brain_trait_binary)%>%
+    select("Sample","Rep_status","MatxPat","Tissue","Allele","Block")
+
+all(colnames(brain_doe)==colnames(fbo_doe))
+
+all_doe<-rbind(brain_doe,fbo_doe)%>%
+    select("Sample","Rep_status","MatxPat","Tissue","Allele","Block")
+all_doe$Rep_status<-factor(all_doe$Rep_status,levels = c("Sterile","Reproductive"))
+all_doe$MatxPat<-factor(all_doe$MatxPat,levels=c("ExA","AxE"))
+all_doe$Tissue<-factor(all_doe$Tissue,levels=c("FBO","Brain"))
+all_doe$Allele<-factor(all_doe$Allele,levels=c("Queen","Drone"))
+all_doe$Block<-factor(all_doe$Block,levels=c("A","B"))
+all_doe$TissuexRep<- factor(paste0(all_doe$Tissue, all_doe$Rep_status), levels=c("FBOSterile", "FBOReproductive","BrainSterile", "BrainReproductive"))
+
+
+```
+
+
+```{r active brains and ovaries ASE}
+
+
+##verifying that same genes come up in data sets
+intersect(active_brain$X,sterile_brain$X)%>%length()
+intersect(sterile_FO$X,active_FO$X)%>%length
+
+
+
+##joining
+brains<-inner_join(active_brain,sterile_brain)
+ovaries<-inner_join(active_FO,sterile_FO)
+
+
+
+#coordinating order of ovary samples
+rownames(fbo_doe)<-fbo_doe$Sample
+ovaries<-ovaries[c("X",fbo_doe$Sample)]
+
+
+#verify that they're in the same order
+all(colnames(brains[,-1])==brain_doe$Sample)
+all(colnames(ovaries[,-1])==fbo_doe$Sample)
+
+##setting rownames
+rownames(brains)<-brains$X
+rownames(ovaries)<-ovaries$X
+ovaries<-ovaries%>%select(-X)
+brains<-brains%>%select(-X)
+
+##genes that overlap
+overlappinggenes<-intersect(rownames(brains),rownames(ovaries))
+
+##subsetting data sets for shared genes
+common_brains<-brains[overlappinggenes,]%>%as.matrix()
+common_brains%>%dim()
+common_ovaries<-ovaries[overlappinggenes,]%>%as.matrix()
+common_ovaries%>%dim()
+
+
+all(all_doe[all_doe$Tissue=="Brain",]$Sample==colnames(common_brains))
+all(all_doe[all_doe$Tissue=="FBO",]$Sample==colnames(common_ovaries))
+
+dds_brain <- DESeqDataSetFromMatrix(
+    countData = common_brains,
+    colData = all_doe[all_doe$Tissue=="Brain",],
+    design = ~ Rep_status+MatxPat+Allele+Block)
+
+dds_FBO <- DESeqDataSetFromMatrix(
+    countData = common_ovaries,
+    colData = all_doe[all_doe$Tissue=="FBO",],
+    design = ~ Rep_status+MatxPat+Allele+Block)
+
+
+##subsetting each data set
+activebrain_shared<-active_brain[active_brain$X %in% overlappinggenes,-1]%>%as.matrix()
+sterilebrain_shared<-sterile_brain[sterile_brain$X %in% overlappinggenes,-1]%>%as.matrix()
+activeovaries_shared<-active_FO[active_FO$X %in% overlappinggenes,-1]%>%as.matrix()
+sterileovaries_shared<-sterile_FO[sterile_FO$X %in% overlappinggenes,-1]%>%as.matrix()
+
+rownames(activebrain_shared)<-
+    rownames(sterilebrain_shared)<-
+    rownames(activeovaries_shared)<-
+    rownames(sterileovaries_shared)<-
+    overlappinggenes
+
+##various transformations
+# vst_brain<-vst(dds_brain)%>%assay() #variance stabilized
+# vst_FBO<-vst(dds_FBO)%>%assay()
+# 
+# ntd_brain<-normTransform(dds_brain)%>%assay() #log trnasform
+# ntd_FBO<-normTransform(dds_FBO)%>%assay()
+
+#super slow
+#rlog_brain<-rlog(dds_brain)%>%assay() #regularized log
+#rlog_FBO<-rlog(dds_FBO)%>%assay()
+
+
+
+```
+
+
+```{r cleaning all expr data }
+##subset all genes and info into brain and FBO
+
+rownames(all_expr)<-all_expr$chrmxfeaturexstartxendxID
+all_expr<-all_expr%>%select(-chrmxfeaturexstartxendxID)
+all(colnames(all_expr)==rownames(all_info))##all genes check out
+
+#subsetting for tissue specific dataset
+#all_expr_brain<-all_expr[,all_info$Tissue=="Brain"]
+all_expr_brain<-all_expr_updated%>%select(rownames(pDataUpdated)) #use this instead
+all_expr_ovary<-all_expr[,all_info$Tissue=="FBO"]
+
+
+
+##updated Brain dataset
+
+pDataUpdated$Tissue<-"Brain"
+pDataUpdated<-pDataUpdated%>%select(-Line)
+### Preparing all genes sample info
+FBOnames<-rownames(all_info[all_info$Tissue=="FBO",])
+all_info<-all_info%>%select(Rep_status,Block,MatxPat,Tissue)
+all_info_FBO<-all_info%>%filter(Tissue=="FBO")
+rownames(all_info_FBO)<-FBOnames
+
+##merge updated brainsback
+all_info<-rbind(all_info_FBO,pDataUpdated )
+
+##merge updated brain gene list back into the pipe
+all_expr<-cbind(all_expr_ovary,all_expr_brain)%>%select(rownames(all_info))
+
+
+all(colnames(all_expr)==rownames(all_info))
+
+
+#settings levels for factors
+all_info$Rep_status<-factor(all_info$Rep_status,levels = c("Sterile","Reproductive"))
+all_info$Block<-factor(all_info$Block,levels=c("A","B"))
+all_info$MatxPat<-factor(all_info$MatxPat,levels=c("ExA","AxE"))
+
+
+
+##setting rownames
+rownames(all_expr_brain)<-rownames(all_expr)
+rownames(all_expr_ovary)<-rownames(all_expr)
+
+
+
+all(all_info[all_info$Tissue=="Brain",]$Sample==colnames(all_expr_brain))
+all(all_info[all_info$Tissue=="FBO",]$Sample==colnames(all_expr_ovary))
+
+dds_all<- DESeqDataSetFromMatrix(
+    countData = all_expr%>%round(),
+    colData = all_info,
+    design = ~ Rep_status+MatxPat+Block+Tissue)
+
+
+dds_all_brain<- DESeqDataSetFromMatrix(
+    countData = round(all_expr_brain),
+    colData = all_info[all_info$Tissue=="Brain",],
+    design = ~ Rep_status+MatxPat+Block)
+dds_all_FBO <- DESeqDataSetFromMatrix(
+    countData = round(all_expr_ovary),
+    colData = all_info[all_info$Tissue=="FBO",],
+    design = ~ Rep_status+MatxPat+Block)
+
+```
+
+```{r transforming data}
+
+
+vst_all_brain<-vst(dds_all_brain)%>%assay() #variance stabilized
+vst_all_FBO<-vst(dds_all_FBO)%>%assay()
+
+vst_all<-vst(dds_all)%>%assay()
+
+
+```
+
+```{r rows to keep}
+keep <- rowSums(counts(dds_all)>=40) >= 12#filter genes present in at least 12 samples with counts at least 10
+
+keep_FBO <- rowSums(counts(dds_all_FBO,normalize=F)>=20) >= 3 ###only use this if you want to use different genes in each data set
+
+dds_all<-dds_all[keep,]
+dds_all_FBO <- dds_all_FBO[keep,]
+dds_all_brain<-dds_all_brain[keep,]
+```
+
+```{r save data}
+
+save(dds_all,dds_all_FBO,dds_all_brain,vst_all_FBO, vst_all,vst_all_brain,all_info,keep, keep_FBO,file = "../data/dds_gene_counts.Rdata")
+```
+
+
