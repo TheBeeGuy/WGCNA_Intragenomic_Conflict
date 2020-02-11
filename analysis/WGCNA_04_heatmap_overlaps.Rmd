@@ -67,6 +67,7 @@ pheatmap(final_dataset,
          cluster_cols = F,
          show_rownames =T,
          fontsize =14,
+         annotation_legend = T,
          color = cols
         )
 dev.off()
@@ -135,25 +136,29 @@ draw_colnames_180 <- function (coln, gaps, ...) {
 assignInNamespace(x="draw_colnames", value="draw_colnames_180",
 ns=asNamespace("pheatmap"))
 
-
+#replace the periods in the pvalues rownames
+rownames(pvalues)<-gsub('\\.', ' ',rownames(pvalues)) 
+pvalues_ovary<-pvalues[c(3,4,1,2,5,6,7,11,8,9,10,12),]
 
 #all columns
 pdf(file = "../figures/ovary_module_geneslist_overlap_separate.pdf", wi = 4, he = 6)
-pheatmap(pvalues, 
+pheatmap(pvalues_ovary, 
          cluster_rows = F, 
          cluster_cols = F,
          show_rownames =T,
+         gaps_col = 3,
          fontsize =14,
-         color = cols,
+         color = cols,## separate ovary activity visually
          title = 'Ovary Overlaps with PSGE and DEG'
         )
 dev.off()
 
 
 png(file = "../figures/ovary_module_geneslist_overlap_separate.png", wi = 4, he = 6,units = 'in',res = 300)
-pheatmap(pvalues, 
+pheatmap(pvalues_ovary, 
          cluster_rows = F, 
          cluster_cols = F,
+         gaps_col = 3,
          show_rownames =T,
          fontsize =14,
          color = cols,
@@ -327,12 +332,18 @@ assignInNamespace(x="draw_colnames", value="draw_colnames_180",
 ns=asNamespace("pheatmap"))
 
 
+#replace the periods in the pvalues rownames
+rownames(pvalues)<-gsub('\\.', ' ',rownames(pvalues)) 
+pvalues_brain<- pvalues[c(3,1,2,4,5,6,7,8,9),]
+
+
 
 #all columns
 pdf(file = "../figures/brain_module_geneslist_overlap_separate.pdf", wi = 4, he = 6)
-pheatmap(pvalues, 
+pheatmap(pvalues_brain, 
          cluster_rows = F, 
          cluster_cols = F,
+         gaps_col = 3,
          show_rownames =T,
          fontsize =14,
          color = cols
@@ -341,9 +352,10 @@ dev.off()
 
 
 png(file = "../figures/brain_module_geneslist_overlap_separate.png", wi = 4, he = 6,units = 'in',res = 300)
-pheatmap(pvalues, 
+pheatmap(pvalues_brain, 
          cluster_rows = F, 
          cluster_cols = F,
+         gaps_col = 3,
          show_rownames =T,
          fontsize =14,
          color = cols
