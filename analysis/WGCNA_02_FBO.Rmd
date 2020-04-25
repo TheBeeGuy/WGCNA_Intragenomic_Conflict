@@ -27,8 +27,16 @@ load("../data/dds_gene_counts.Rdata")
 FBO_psge_active<-read.csv("../data/PGSE-active.csv")
 FBO_psge_sterile<-read.csv("../data/PGSE-sterile.csv")
 
+##can remove the bias filter to include European and Afrianized bias
 PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
+#%>%filter(bias %in% c('maternal','paternal')
+
+
 PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
+#%>%filter(bias %in% c('maternal','paternal')
+
+
+
 DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
 DEG_brain<-read.csv('../data/DEG_brain_reproductive_status.csv')%>%select("ID")
 
@@ -56,7 +64,7 @@ background <- 15314
 ```{r PSGE common genes overlaps}
 
 ##77 of the FBO PSGE are overlapping in sterile and active
-intersect(PSGE_active$ID,PSGE_sterile$ID)%>%length()
+intersect(PSGE_active$ID,PSGE_active$ID)%>%length()
 
 #201 total PSGE in FBO tissue
 psge_fbo_length<- unique(PSGE_active$ID,PSGE_sterile$ID)%>%length()
@@ -76,7 +84,7 @@ background <- 15314
 
 1-phyper(common_PSGE,psge_brain_length, background-psge_brain_length,psge_fbo_length)
 ```
-```{r DEG PSGE overlaps}
+```{r DEG PSGE overlaps - hypergeometric tests}
 ##Brain DEG and Ovary PSGE
 
 common_BrainDEG_OvaryPSGE<-intersect(DEG_brain$ID, unique(PSGE_active$ID,PSGE_sterile$ID))%>%length()
@@ -237,10 +245,11 @@ main = "Ovary gene dendrogram and module colors")
 dev.off()
 
 
+##save the resuts out for later. uncomment this to save.
  # save(ovaryMEs, ovaryMLabels,ovaryMColors,ovaryTree,net_ovaries,ovary_Traits,ovaryExpr,setLabels,shortLabels, file = "../data/OvaryModules.RData")
 
  
- 
+ #load in data
   load("../data/OvaryModules.RData")
 
 
@@ -384,19 +393,19 @@ dev.off()
 ```{r getting ovary module gene lists}
 #consMEs,consMColors,consMLabels,ME_names
 conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID)
+
+
+
 MEdata_ovary<-ovaryExpr[[1]]$data
 gene_name<-colnames(MEdata_ovary)%>%as.data.frame
 colnames(gene_name)<-"Beebase"
 gene_entrez<-left_join(gene_name,conversion)%>%distinct
 all(gene_entrez$Beebase==colnames(MEdata_ovary))
 
+
 ##this line of code subs in the entrez, which is used for the KEGGs
 #However, beebase useful for the overlaps with DMLs
-#colnames(MEdata)<-gene_entrez$Entrez
-
-
-
-
+#colnames(MEdata_ovary)<-gene_entrez$Entrez
 
 module_ovary_significant_genes<-data.frame(background=colnames(MEdata_ovary))
 for (i in ME_names_ovary){
@@ -511,6 +520,8 @@ write.csv(ovary_moduleDEG_PSGE_genes_results,"../output/ovary_moduleDEG_PSGE_ove
 # sterile_DEG_module42_overlap<-intersect(mod_sig_fbo_beebase$ME42,PSGE_sterile )
 
 ```
+
+
 
 ```{r converting to entrez, warning=F}
 

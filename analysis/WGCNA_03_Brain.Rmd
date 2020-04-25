@@ -39,8 +39,8 @@ background <- 15314
 active_brain<-read.csv("../data/Brain_Imprinting_ASE_Rep_Overlap.csv",header=T)
 sterile_brain<-read.csv("../data/Brain_Imprinting_ASE_Str_Overlap.csv",header=T)
 
-activeASE<- active_brain[active_brain$bias!='No Bias',]
-sterileASE <-sterile_brain[sterile_brain$bias!='No Bias',]
+activeASE<- active_brain%>%filter(bias!='No Bias')%>%select(ID,bias)#%>%filter(bias %in% c('maternal','paternal'))
+sterileASE <-sterile_brain%>%filter(bias!='No Bias')%>%select(ID, bias)#%>%filter(bias %in% c('maternal','paternal'))
 
 # #Old
 # #these each have 3.5 K genes and 25 samples
@@ -433,6 +433,77 @@ write.csv(kegg_pathways_WGCNA_Brain, file = "../output/kegg_pathways_WGCNA_Brain
 kegg_pathways_WGCNA$ME42
 ```
 
+
+```{r compiling gene lists}
+
+
+
+#read in conversion again, specifying col names
+conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID, GenbankID= GenbankID )
+
+#prepare DEGs
+DEG_brain<-read.csv('../data/DEG_brain_reproductive_status.csv')%>%select(Beebase=ID, Brain_DEG_Type = Type)
+
+#read in flybase names
+flybase <-read.csv('../data/GeneIDtoGeneName.csv')
+colnames(flybase)[1]<-'Beebase'
+
+#read in active and sterile biases
+activebias<- active_brain%>%filter(bias!='No Bias')%>%select(Beebase=ID,active_bias=bias)#%>%filter(bias %in% c('maternal','paternal'))
+
+sterilebias <-sterile_brain%>%filter(bias!='No Bias')%>%select(Beebase=ID, sterile_bias = bias)#%>%filter(bias %in% c('maternal','paternal'))
+
+#brain module assignments
+MEdata_brain<-brainExpr[[1]]$data
+
+gene_name<-colnames(MEdata_brain)%>%as.data.frame
+colnames(gene_name)<-"Beebase"
+gene_entrez<-left_join(gene_name,conversion)%>%distinct
+all(gene_entrez$Beebase==colnames(MEdata_brain))
+
+#join entrez IDs and flybase info
+allIDs<-left_join(gene_entrez,flybase, by="Beebase")
+
+
+#creating brain module labels
+gene_bmod<-as.data.frame(cbind(Beebase = rownames(t(MEdata_brain)),BrainModule = paste("B ",brainMLabels)))
+
+##joining info together using beebase ids
+
+gene_bmod_DEG <- left_join(gene_bmod, DEG_brain, by = "Beebase")
+
+genes_w_active<-left_join(gene_bmod_DEG,activebias)
+genes_w_act_ster<-left_join(genes_w_active, sterilebias)
+
+gene_assignments <- left_join(genes_w_act_ster, allIDs, by = "Beebase")
+
+
+
+
+#write it out
+write.csv(gene_assignments,"../output/brain_genes_module_bias.csv")
+
+
+##also creating sheets for active and sterile separately
+
+#create separate sterile and active
+sterile_bmod<-left_join(sterilebias,gene_bmod)
+active_bmod<-left_join(activebias,gene_bmod)
+
+
+sterile_bmod_deg<-left_join(sterile_bmod,DEG_brain)
+active_bmod_deg<-left_join(active_bmod,DEG_brain)
+
+
+sterile_info<-left_join(sterile_bmod_deg,allIDs)
+active_info<-left_join(active_bmod_deg,allIDs)
+
+write.csv(sterile_info,"../output/sterileASE_genes_module_bias.csv")
+write.csv(active_info,"../output/activeASE_genes_module_bias.csv")
+
+
+
+```
 
 ```{r exporting consensus to Cytoscape}
 # Recalculate topological overlap if needed
