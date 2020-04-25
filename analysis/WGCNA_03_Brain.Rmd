@@ -503,6 +503,11 @@ write.csv(active_info,"../output/activeASE_genes_module_bias.csv")
 
 
 
+###
+
+deg_brain_with_IDs<-left_join(DEG_brain,allIDs)
+write.csv(deg_brain_with_IDs,"../output/deg_reproductive_with_IDs.csv")
+
 ```
 
 ```{r exporting consensus to Cytoscape}

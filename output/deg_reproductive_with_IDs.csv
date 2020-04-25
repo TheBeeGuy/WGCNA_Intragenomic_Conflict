@@ -1,0 +1,34 @@
+,Beebase,Brain_DEG_Type,Entrez,GenbankID,D_melanogaster_Protein_ID,D_melanogaster_Gene_ID,accession,Gene_name
+1,GB53514,Reproductive,100577057, Genbank:XM_026441405.1,#N/A,#N/A,XR_411909.1," PREDICTED: Apis mellifera ADAMTS-like protein 3-like (LOC100577057), transcript variant X3, misc_RNA"
+2,GB49762,Reproductive,410864, Genbank:XM_006568206.3,FBpp0087861,FBgn0033264,XM_006568205.1," PREDICTED: Apis mellifera nucleoporin 50kDa (NUP50), transcript variant X1, mRNA"
+3,GB49762,Reproductive,410864, Genbank:XM_006568205.3,FBpp0087861,FBgn0033264,XM_006568205.1," PREDICTED: Apis mellifera nucleoporin 50kDa (NUP50), transcript variant X1, mRNA"
+4,GB49762,Reproductive,410864, Genbank:XM_006568207.3,FBpp0087861,FBgn0033264,XM_006568205.1," PREDICTED: Apis mellifera nucleoporin 50kDa (NUP50), transcript variant X1, mRNA"
+5,GB49803,Reproductive,410863, Genbank:XM_016910794.2,FBpp0070302,FBgn0023509,XM_006568200.1," PREDICTED: Apis mellifera protein lin-9 homolog (LOC410863), mRNA"
+6,GB49763,Reproductive,100577605, Genbank:XM_026439263.1,#N/A,#N/A,XM_006568199.1," PREDICTED: Apis mellifera uncharacterized LOC100577605 (LOC100577605), mRNA"
+7,GB49802,Reproductive,100578478, Genbank:XM_003251153.4,#N/A,#N/A,XM_003251153.2," PREDICTED: Apis mellifera uncharacterized LOC100578478 (LOC100578478), transcript variant X1, mRNA"
+8,GB49802,Reproductive,100578478, Genbank:XM_006568203.3,#N/A,#N/A,XM_003251153.2," PREDICTED: Apis mellifera uncharacterized LOC100578478 (LOC100578478), transcript variant X1, mRNA"
+9,GB50613,Reproductive,NA,NA,#N/A,#N/A,XM_003250463.2," PREDICTED: Apis mellifera uncharacterized LOC100578514 (LOC100578514), mRNA"
+10,GB49800,Reproductive,NA,NA,FBpp0074981,FBgn0036725,XM_006568196.1," PREDICTED: Apis mellifera uncharacterized LOC102654726 (LOC102654726), mRNA"
+11,GB49764,Reproductive,NA,NA,FBpp0073326,FBgn0261277,XM_006568201.1," PREDICTED: Apis mellifera uncharacterized LOC102654905 (LOC102654905), mRNA"
+12,GB49804,Reproductive,410865, Genbank:XM_016910797.2,#N/A,#N/A,XM_006568204.1," PREDICTED: Apis mellifera uncharacterized LOC410865 (LOC410865), mRNA"
+13,GB49765,Reproductive,NA,NA,NA,NA,NA,NA
+14,GB49766,Reproductive,NA,NA,NA,NA,NA,NA
+15,GB51083,Sterile,NA,NA,NA,NA,NA,NA
+16,GB53515,Sterile,NA,NA,NA,NA,NA,NA
+17,GB46365,Sterile,NA,NA,FBpp0075184,FBgn0011693,XM_006560122.1," PREDICTED: Apis mellifera 15-hydroxyprostaglandin dehydrogenase [NAD+]-like (LOC724838), mRNA"
+18,GB51356,Sterile,409469, Genbank:XM_006559340.3,FBpp0070094,FBgn0010019,XM_006559341.1," PREDICTED: Apis mellifera cytochrome P450 4G11 (Cyp4g11), transcript variant X2, mRNA"
+19,GB51356,Sterile,409469, Genbank:XM_006559341.2,FBpp0070094,FBgn0010019,XM_006559341.1," PREDICTED: Apis mellifera cytochrome P450 4G11 (Cyp4g11), transcript variant X2, mRNA"
+20,GB51356,Sterile,409469, Genbank:XM_016916903.2,FBpp0070094,FBgn0010019,XM_006559341.1," PREDICTED: Apis mellifera cytochrome P450 4G11 (Cyp4g11), transcript variant X2, mRNA"
+21,GB51356,Sterile,409469, Genbank:NM_001040233.1,FBpp0070094,FBgn0010019,XM_006559341.1," PREDICTED: Apis mellifera cytochrome P450 4G11 (Cyp4g11), transcript variant X2, mRNA"
+22,GB55143,Sterile,NA,NA,#N/A,#N/A,XM_006558997.1," PREDICTED: Apis mellifera dynein heavy chain 6, axonemal-like (LOC411602), mRNA"
+23,GB53574,Sterile,409707, Genbank:XM_006570540.3,FBpp0073730,FBgn0052600,XM_393205.5," PREDICTED: Apis mellifera neurotrimin-like (LOC409707), transcript variant X2, mRNA"
+24,GB53574,Sterile,409707, Genbank:XM_393205.7,FBpp0073730,FBgn0052600,XM_393205.5," PREDICTED: Apis mellifera neurotrimin-like (LOC409707), transcript variant X2, mRNA"
+25,GB55233,Sterile,725424, Genbank:XM_016914674.2,FBpp0082912,FBgn0038536,XM_006559026.1," PREDICTED: Apis mellifera nurim homolog (LOC725424), mRNA"
+26,GB55233,Sterile,725424, Genbank:XM_026444103.1,FBpp0082912,FBgn0038536,XM_006559026.1," PREDICTED: Apis mellifera nurim homolog (LOC725424), mRNA"
+27,GB53521,Sterile,NA,NA,#N/A,#N/A,XM_006570541.1," PREDICTED: Apis mellifera probable serine/threonine-protein kinase tsuA-like (LOC102656253), mRNA"
+28,GB53520,Sterile,724611, Genbank:XM_026441425.1,#N/A,#N/A,XM_006570545.1," PREDICTED: Apis mellifera tubulin glycylase 3A-like (LOC724611), transcript variant X4, mRNA"
+29,GB53520,Sterile,724611, Genbank:XM_026441426.1,#N/A,#N/A,XM_006570545.1," PREDICTED: Apis mellifera tubulin glycylase 3A-like (LOC724611), transcript variant X4, mRNA"
+30,GB53575,Sterile,NA,NA,#N/A,#N/A,XR_411904.1," PREDICTED: Apis mellifera uncharacterized LOC102656458 (LOC102656458), transcript variant X2, ncRNA"
+31,GB55154,Sterile,NA,NA,#N/A,#N/A,XR_408151.1," PREDICTED: Apis mellifera uncharacterized LOC102656737 (LOC102656737), transcript variant X1, ncRNA"
+32,GB55174,Sterile,NA,NA,NA,NA,NA,NA
+33,GB43757,Sterile,NA,NA,NA,NA,NA,NA
