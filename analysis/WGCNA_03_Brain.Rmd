@@ -439,7 +439,7 @@ kegg_pathways_WGCNA$ME42
 
 
 #read in conversion again, specifying col names
-conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID, GenbankID= GenbankID )
+conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID, GenbankID= GenbankID )%>%distinct()
 
 #prepare DEGs
 DEG_brain<-read.csv('../data/DEG_brain_reproductive_status.csv')%>%select(Beebase=ID, Brain_DEG_Type = Type)

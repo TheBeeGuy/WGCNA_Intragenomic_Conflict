@@ -27,27 +27,19 @@ load("../data/dds_gene_counts.Rdata")
 FBO_psge_active<-read.csv("../data/PGSE-active.csv")
 FBO_psge_sterile<-read.csv("../data/PGSE-sterile.csv")
 
-##can remove the bias filter to include European and Afrianized bias
 PSGE_active<-read.csv("../data/PGSE-active.csv")%>%select("ID")
-#%>%filter(bias %in% c('maternal','paternal')
-
-
 PSGE_sterile<-read.csv("../data/PGSE-sterile.csv")%>%select("ID")
-#%>%filter(bias %in% c('maternal','paternal')
-
-
-
 DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select("ID")
 DEG_brain<-read.csv('../data/DEG_brain_reproductive_status.csv')%>%select("ID")
-
+background <- 15314
 ```
 
 ```{r PSGE brain data}
 active_brain<-read.csv("../data/Brain_Imprinting_ASE_Rep_Overlap.csv",header=T)
 sterile_brain<-read.csv("../data/Brain_Imprinting_ASE_Str_Overlap.csv",header=T)
 
-activeASE<- active_brain[active_brain$bias!='No Bias',]
-sterileASE <-sterile_brain[sterile_brain$bias!='No Bias',]
+activeASE<- active_brain[active_brain$bias!='No Bias',]%>%select(ID,bias)
+sterileASE <-sterile_brain[sterile_brain$bias!='No Bias',]%>%select(ID,bias)
 
 ```
 
@@ -64,7 +56,7 @@ background <- 15314
 ```{r PSGE common genes overlaps}
 
 ##77 of the FBO PSGE are overlapping in sterile and active
-intersect(PSGE_active$ID,PSGE_active$ID)%>%length()
+intersect(PSGE_active$ID,PSGE_sterile$ID)%>%length()
 
 #201 total PSGE in FBO tissue
 psge_fbo_length<- unique(PSGE_active$ID,PSGE_sterile$ID)%>%length()
@@ -84,7 +76,8 @@ background <- 15314
 
 1-phyper(common_PSGE,psge_brain_length, background-psge_brain_length,psge_fbo_length)
 ```
-```{r DEG PSGE overlaps - hypergeometric tests}
+
+```{r DEG PSGE overlaps}
 ##Brain DEG and Ovary PSGE
 
 common_BrainDEG_OvaryPSGE<-intersect(DEG_brain$ID, unique(PSGE_active$ID,PSGE_sterile$ID))%>%length()
@@ -245,11 +238,10 @@ main = "Ovary gene dendrogram and module colors")
 dev.off()
 
 
-##save the resuts out for later. uncomment this to save.
  # save(ovaryMEs, ovaryMLabels,ovaryMColors,ovaryTree,net_ovaries,ovary_Traits,ovaryExpr,setLabels,shortLabels, file = "../data/OvaryModules.RData")
 
  
- #load in data
+ 
   load("../data/OvaryModules.RData")
 
 
@@ -393,19 +385,19 @@ dev.off()
 ```{r getting ovary module gene lists}
 #consMEs,consMColors,consMLabels,ME_names
 conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID)
-
-
-
 MEdata_ovary<-ovaryExpr[[1]]$data
 gene_name<-colnames(MEdata_ovary)%>%as.data.frame
 colnames(gene_name)<-"Beebase"
 gene_entrez<-left_join(gene_name,conversion)%>%distinct
 all(gene_entrez$Beebase==colnames(MEdata_ovary))
 
-
 ##this line of code subs in the entrez, which is used for the KEGGs
 #However, beebase useful for the overlaps with DMLs
-#colnames(MEdata_ovary)<-gene_entrez$Entrez
+#colnames(MEdata)<-gene_entrez$Entrez
+
+
+
+
 
 module_ovary_significant_genes<-data.frame(background=colnames(MEdata_ovary))
 for (i in ME_names_ovary){
@@ -521,8 +513,6 @@ write.csv(ovary_moduleDEG_PSGE_genes_results,"../output/ovary_moduleDEG_PSGE_ove
 
 ```
 
-
-
 ```{r converting to entrez, warning=F}
 
 ## test that it's working
@@ -547,6 +537,88 @@ write.csv(kegg_pathways_WGCNA_FBO, file = "../output/kegg_pathways_WGCNA_FBO.csv
 kegg_pathways_WGCNA_FBO$ME7
 ```
 
+
+
+```{r compiling gene lists}
+
+
+
+#read in conversion again, specifying col names
+conversion<-read.csv("../data/mRNA_Entrez_Genbank_HAv3.1beebase_conversion.csv",header = T)%>%select(Beebase=OtherID, Entrez=GeneID)%>%distinct()
+
+
+#prepare DEGs
+#DEG_brain<-read.csv('../data/DEG_brain_reproductive_status.csv')%>%select(Beebase=ID, Brain_DEG_Type = Type)
+
+DEG_reproductive<-read.csv("../data/DEG_reproductivestatus_galbraith2016.csv")%>%select(Beebase=ID, FBO_DEG_Type = Up.regulated.in)
+
+#read in flybase names
+flybase <-read.csv('../data/GeneIDtoGeneName.csv')
+colnames(flybase)[1]<-'Beebase'
+
+#read in active and sterile biases
+
+activebias<-read.csv("../data/PGSE-active.csv")%>%filter(bias!='No Bias')%>%select(Beebase=ID,active_bias=bias)#%>%filter(bias %in% c('maternal','paternal'))
+sterilebias<-read.csv("../data/PGSE-sterile.csv")%>%filter(bias!='No Bias')%>%select(Beebase=ID, sterile_bias = bias)#%>%filter(bias %in% c('maternal','paternal'))
+
+
+#ovary module assignments
+MEdata_ovary<-ovaryExpr[[1]]$data
+
+gene_name<-colnames(MEdata_ovary)%>%as.data.frame
+colnames(gene_name)<-"Beebase"
+
+gene_entrez<-left_join(gene_name,conversion)%>%distinct()
+all(gene_entrez$Beebase==colnames(MEdata_ovary))
+
+#join entrez IDs and flybase info
+allIDs<-left_join(gene_entrez,flybase)
+
+
+#creating brain module labels
+gene_fbomod<-as.data.frame(cbind(Beebase = rownames(t(MEdata_ovary)),FBO_Module = paste("FBO ",ovaryMLabels)))
+
+##joining info together using beebase ids
+
+gene_fbomod_DEG <- left_join(gene_fbomod, DEG_reproductive, by = "Beebase")
+
+genes_w_active<-left_join(gene_fbomod_DEG,activebias)
+genes_w_act_ster<-left_join(genes_w_active, sterilebias)
+
+gene_assignments <- left_join(genes_w_act_ster, allIDs, by = "Beebase")
+
+
+
+
+#write it out
+write.csv(gene_assignments,"../output/fbo_genes_module_bias.csv")
+
+
+##also creating sheets for active and sterile separately
+
+#create separate sterile and active
+sterile_bmod<-left_join(sterilebias,gene_fbomod)
+active_bmod<-left_join(activebias,gene_fbomod)
+
+
+sterile_bmod_deg<-left_join(sterile_bmod,DEG_reproductive)
+active_bmod_deg<-left_join(active_bmod,DEG_reproductive)
+
+
+sterile_info<-left_join(sterile_bmod_deg,allIDs)
+active_info<-left_join(active_bmod_deg,allIDs)
+
+write.csv(sterile_info,"../output/fbo_sterileASE_genes_module_bias.csv")
+write.csv(active_info,"../output/fbo_activeASE_genes_module_bias.csv")
+
+
+
+###
+
+deg_ovary_with_IDs<-left_join(DEG_reproductive,allIDs)
+write.csv(deg_ovary_with_IDs,"../output/fbo_deg_reproductive_with_IDs.csv")
+
+```
 
 ```{r exporting consensus to Cytoscape}
 # Recalculate topological overlap if needed
